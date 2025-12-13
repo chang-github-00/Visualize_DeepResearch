@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_20",
+  "geneName": "PHB2",
+  "timestamp": "2025-12-13T08:34:31.208Z",
+  "explore": "yes",
+  "evidence": "excellent",
+  "errors": "none",
+  "singlecell": "excellent",
+  "novelty": "highly-novel",
+  "comments": "Suggestions on the Following Attempt: \nThe report is very interesting, especially the Goldilocks effect. However there are a few details I would like you to dig deeper. \n1. Run the cellprofiler analysis pipeline to draw more features out of mitochondria and ER channels to understand better the phenotype: e.g. if the mitochondria is fragmented or damaged. Also calculate colocalization of damaged mitochondria with ER channels to understand why ER stress exists and what are the more detailed effects on the cells.\n2. The report mentions unique Aspects of PHB2. Draw plots to compare with other related mitochondria depletion genes to see that bidirectional effects like PHB2 is indeed unique. Also compare single cell analysis and clustering analysis with other mitophagy related genes such as PHB1, FUNDC1, BNIP3, NIX"
+}
