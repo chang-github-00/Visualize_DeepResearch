@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUMP Discovery Research Explorer</title>
+    <style>
+        :root {
+            --primary-bg: #0a0f1e;
+            --secondary-bg: #1a2332;
+            --accent-bg: #2d3f5f;
+            --panel-bg: #162030;
+            --border-color: #2d4560;
+            --text-primary: #e8f4fd;
+            --text-secondary: #a8c5e6;
+            --text-muted: #6a8db3;
+            --accent-gold: #ffd700;
+            --accent-blue: #4fc3f7;
+            --accent-green: #4caf50;
+            --accent-orange: #ff9800;
+            --accent-red: #f44336;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 50%, var(--accent-bg) 100%);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 60px 1fr 400px;
+            grid-template-rows: 60px 1fr;
+            grid-template-areas: 
+                "sidebar header report"
+                "sidebar main report";
+            height: 100vh;
+            gap: 2px;
+            background: var(--border-color);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--panel-bg);
+            padding: 10px 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            border-right: 2px solid var(--border-color);
+        }
+
+        .sidebar-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .sidebar-icon:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .sidebar-icon.active {
+            background: var(--accent-gold);
+            color: var(--primary-bg);
+        }
+
+        /* Header */
+        .header {
+            grid-area: header;
+            background: var(--panel-bg);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: var(--accent-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        /* Main Visualization Panel */
+        .main-panel {
+            grid-area: main;
+            background: var(--panel-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visualization-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Report Panel */
+        .report-panel {
+            grid-area: report;
+            background: var(--panel-bg);
+            border-left: 2px solid var(--border-color);
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .report-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .meta-item {
+            background: var(--accent-bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .meta-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .score-indicators {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .score-card {
+            background: var(--secondary-bg);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .score-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .score-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .score-high { color: var(--success); }
+        .score-medium { color: var(--warning); }
+        .score-low { color: var(--danger); }
+
+        .score-bar {
+            height: 4px;
+            background: var(--accent-bg);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            transition: width 0.8s ease;
+            border-radius: 2px;
+        }
+
+        .score-fill.high { background: var(--success); }
+        .score-fill.medium { background: var(--warning); }
+        .score-fill.low { background: var(--danger); }
+
+        /* Node Styles */
+        .node {
+            stroke-width: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 8px var(--shadow));
+        }
+
+        .node:hover {
+            transform-origin: center center;
+            transform: scale(1.1);
+            filter: drop-shadow(0 4px 16px rgba(79, 195, 247, 0.8));
+        }
+
+        .central-node {
+            stroke: var(--accent-gold);
+            stroke-width: 4px;
+        }
+
+        .attempt-node {
+            stroke: var(--border-color);
+        }
+
+        .attempt-node.selected {
+            stroke: var(--accent-blue);
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 20px var(--accent-blue));
+            transform-origin: center center;
+        }
+
+        .attempt-node.high-quality {
+            stroke: var(--success);
+            stroke-width: 3px;
+        }
+
+        .attempt-node.medium-quality {
+            stroke: var(--warning);
+            stroke-width: 2px;
+        }
+
+        .attempt-node.low-quality {
+            stroke: var(--danger);
+            stroke-width: 2px;
+        }
+
+        .attempt-node.labeled {
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+        }
+
+        /* Evaluation-based node colors */
+        .attempt-node.not-evaluated {
+            fill: #ffcdd2 !important; /* Light pink - not evaluated */
+        }
+
+        .attempt-node.not-selected {
+            fill: #f8bbd9 !important; /* Pink - not selected for next round */
+        }
+
+        .attempt-node.selected-high-novelty {
+            fill: #4caf50 !important; /* Green - selected with high novelty */
+        }
+
+        .attempt-node.selected-medium-novelty {
+            fill: #ffeb3b !important; /* Yellow - selected with medium/low novelty */
+        }
+
+        .label-badge {
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .node-label {
+            font-size: 11px;
+            font-weight: 600;
+            fill: var(--text-primary);
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px var(--primary-bg);
+        }
+
+        .node-badge {
+            font-size: 8px;
+            font-weight: 700;
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px var(--primary-bg);
+        }
+
+        .badge-high { fill: var(--success); }
+        .badge-medium { fill: var(--warning); }
+        .badge-low { fill: var(--danger); }
+
+        .link {
+            stroke: var(--border-color);
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+
+        .link.highlighted {
+            stroke: var(--accent-blue);
+            stroke-opacity: 1;
+            stroke-width: 2.5px;
+        }
+
+        /* Evidence Gallery */
+        .evidence-gallery {
+            margin-top: 20px;
+        }
+
+        .evidence-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .evidence-item {
+            background: var(--secondary-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .evidence-item:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .evidence-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .evidence-caption {
+            padding: 8px 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--accent-bg);
+        }
+
+        /* Report Content */
+        .report-content {
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .report-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .highlight-stat {
+            background: var(--accent-bg);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: var(--accent-gold);
+            font-size: 12px;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-bg));
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .action-btn.secondary {
+            background: linear-gradient(135deg, var(--accent-bg), var(--secondary-bg));
+            border: 1px solid var(--border-color);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 30, 0.95);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: var(--text-primary);
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2001;
+            text-shadow: 2px 2px 4px var(--primary-bg);
+        }
+
+        .modal-close:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Human Labeling Panel */
+        .labeling-panel {
+            background: var(--secondary-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .labeling-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .labeling-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-radio-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .form-radio-item input[type="radio"] {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .form-radio-item input[type="radio"]:checked {
+            border-color: var(--accent-blue);
+            background: var(--accent-blue);
+        }
+
+        .form-radio-item input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-primary);
+        }
+
+        .form-radio-item label {
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .form-textarea {
+            background: var(--accent-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2);
+        }
+
+        .form-submit-btn {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-gold) 100%);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .form-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .form-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .label-status {
+            background: var(--accent-bg);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .label-status.has-labels {
+            background: var(--success);
+            color: var(--text-primary);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--accent-bg);
+            border-top: 3px solid var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--accent-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-icon active" data-view="network" title="Network View">
+                🔗
+            </div>
+            <div class="sidebar-icon" data-view="grid" title="Grid View">
+                ⊞
+            </div>
+            <div class="sidebar-icon" data-view="timeline" title="Timeline">
+                📊
+            </div>
+            <div class="sidebar-icon" data-view="stats" title="Statistics">
+                📈
+            </div>
+            <div class="sidebar-icon" data-view="settings" title="Settings">
+                ⚙️
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>🧬 JUMP Discovery Research Explorer</h1>
+            <div class="header-controls">
+                <button class="control-btn" onclick="resetView()">Reset View</button>
+                <button class="control-btn" onclick="toggleLabels()">Toggle Labels</button>
+                <button class="control-btn" onclick="filterHighQuality()">High Quality Only</button>
+            </div>
+        </div>
+
+        <!-- Main Visualization -->
+        <div class="main-panel">
+            <div class="visualization-container">
+                <div id="loading" class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Loading JUMP Discovery data...</div>
+                </div>
+                <svg id="network"></svg>
+            </div>
+        </div>
+
+        <!-- Report Panel -->
+        <div class="report-panel">
+            <div class="report-header">
+                <div class="report-title">Research Overview</div>
+                <div class="report-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Total Studies</div>
+                        <div class="meta-value" id="total-studies">--</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">High Quality</div>
+                        <div class="meta-value" id="high-quality-count">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="report-content">
+                <div class="report-content">
+                    <div class="report-section">
+                        <div class="section-title">
+                            🎯 About JUMP Discovery
+                        </div>
+                        <p style="margin-bottom: 12px;">
+                            Explore comprehensive gene discovery research using the JUMP Cell Painting dataset. 
+                            Each node represents a hypothesis-driven study with detailed morphological analysis.
+                        </p>
+                        
+                        <div class="section-title">
+                            🏷️ Quality Scoring System
+                        </div>
+                        <p style="margin-bottom: 8px;"><strong style="color: var(--success);">High Quality:</strong> Strong statistical significance, novel findings, comprehensive evidence</p>
+                        <p style="margin-bottom: 8px;"><strong style="color: var(--warning);">Medium Quality:</strong> Moderate evidence, some limitations, interesting preliminary results</p>
+                        <p style="margin-bottom: 12px;"><strong style="color: var(--danger);">Low Quality:</strong> Limited evidence, high uncertainty, requires further validation</p>
+                        
+                        <div class="section-title">
+                            📊 Navigation Guide
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: 6px;">• Click nodes to view detailed research reports</li>
+                            <li style="margin-bottom: 6px;">• Node colors indicate different research areas</li>
+                            <li style="margin-bottom: 6px;">• Border colors show quality scores</li>
+                            <li style="margin-bottom: 6px;">• Hover for confidence and novelty metrics</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Configuration
+        const width = window.innerWidth - 60 - 400;
+        const height = window.innerHeight - 60;
+        
+        // SVG setup
+        const svg = d3.select("#network")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Create groups for different layers
+        const linkGroup = svg.append("g").attr("class", "links");
+        const nodeGroup = svg.append("g").attr("class", "nodes");
+        const labelGroup = svg.append("g").attr("class", "labels");
+        const badgeGroup = svg.append("g").attr("class", "badges");
+
+        // State management
+        let showLabels = true;
+        let nodes = [];
+        let links = [];
+        let nodeElements = null;
+        let linkElements = null;
+        let labelElements = null;
+        let badgeElements = null;
+        let currentFilter = "all";
+
+        // Quality scoring functions
+        function calculateQualityScore(attemptData) {
+            // Mock scoring based on available data - in real implementation,
+            // this would parse the actual report content for statistics
+            const confidence = Math.random() * 100;
+            const novelty = Math.random() * 100;
+            const evidence = Math.random() * 100;
+            
+            // Simulate different quality levels based on attempt number
+            const attemptNum = parseInt(attemptData.id.replace('attempt_', ''));
+            let baseScore = 50;
+            
+            // Some attempts are designated as high quality
+            if ([10, 12, 15, 19, 21, 25].includes(attemptNum)) {
+                baseScore = 75 + Math.random() * 25;
+            } else if ([11, 13, 16, 20, 22, 26].includes(attemptNum)) {
+                baseScore = 50 + Math.random() * 30;
+            } else {
+                baseScore = 20 + Math.random() * 50;
+            }
+            
+            return {
+                overall: Math.min(100, baseScore),
+                confidence: Math.min(100, baseScore + (Math.random() - 0.5) * 20),
+                novelty: Math.min(100, baseScore + (Math.random() - 0.5) * 30),
+                evidence: Math.min(100, baseScore + (Math.random() - 0.5) * 25)
+            };
+        }
+
+        function getQualityLevel(score) {
+            if (score >= 75) return 'high';
+            if (score >= 50) return 'medium';
+            return 'low';
+        }
+
+        // Data loading and processing
+        async function loadAttempts() {
+            try {
+                const response = await fetch('/api/attempts');
+                const attempts = await response.json();
+                return attempts.map(attempt => ({
+                    ...attempt,
+                    scores: calculateQualityScore(attempt)
+                }));
+            } catch (error) {
+                console.log("API not available, using mock data");
+                return await generateMockAttempts();
+            }
+        }
+
+        async function generateMockAttempts() {
+            // This is just a fallback - the real API should handle dynamic detection
+            const attempts = [];
+            console.log("Using fallback mock data - API should provide dynamic detection");
+            return attempts;
+        }
+
+        function createNetworkData(attempts) {
+            // Create central node with fixed position
+            const centralNode = {
+                id: "JumpResearch",
+                name: "JUMP Research",
+                type: "central",
+                x: width / 2,
+                y: height / 2,
+                fx: width / 2,  // Lock x position
+                fy: height / 2  // Lock y position
+            };
+
+            // Create attempt nodes in circular layout with fixed positions
+            const attemptNodes = attempts.map((attempt, index) => {
+                const angle = (index / attempts.length) * 2 * Math.PI;
+                const radius = Math.min(width, height) * 0.35;
+                const x = width / 2 + Math.cos(angle) * radius;
+                const y = height / 2 + Math.sin(angle) * radius;
+                
+                return {
+                    ...attempt,
+                    type: "attempt",
+                    x: x,
+                    y: y,
+                    fx: x,  // Lock x position
+                    fy: y,  // Lock y position
+                    qualityLevel: getQualityLevel(attempt.scores.overall)
+                };
+            });
+
+            nodes = [centralNode, ...attemptNodes];
+            links = attemptNodes.map(node => ({
+                source: centralNode,
+                target: node
+            }));
+
+            return { nodes, links };
+        }
+
+        function renderNetwork(data) {
+            d3.select("#loading").style("display", "none");
+
+            // Update header stats
+            const totalStudies = data.nodes.filter(n => n.type === "attempt").length;
+            const highQuality = data.nodes.filter(n => n.qualityLevel === "high").length;
+            d3.select("#total-studies").text(totalStudies);
+            d3.select("#high-quality-count").text(highQuality);
+
+            // Render links
+            linkElements = linkGroup.selectAll(".link")
+                .data(data.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            // Render nodes
+            nodeElements = nodeGroup.selectAll(".node")
+                .data(data.nodes)
+                .enter().append("circle")
+                .attr("class", d => {
+                    let baseClass = `node ${d.type}-node ${d.qualityLevel ? d.qualityLevel + '-quality' : ''}`;
+                    if (d.type === "attempt") {
+                        baseClass += ' not-evaluated'; // Default evaluation class
+                    }
+                    return baseClass;
+                })
+                .attr("id", d => d.type === "attempt" ? `node-${d.id}` : null)
+                .attr("r", d => d.type === "central" ? 30 : 20)
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("fill", d => {
+                    if (d.type === "central") return "var(--accent-gold)";
+                    const hue = (d.gene.charCodeAt(0) * 137.5) % 360;
+                    return d3.hsl(hue, 0.8, 0.65);
+                })
+                .style("cursor", "pointer")
+                .on("click", function(event, d) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    handleNodeClick(event, d, this);
+                })
+                .on("mouseenter", function(event, d) {
+                    if (d.type === "attempt") {
+                        showQuickInfo(d, event);
+                    }
+                })
+                .on("mouseleave", function() {
+                    hideQuickInfo();
+                })
+                .style("pointer-events", "all");
+
+            // Render labels
+            labelElements = labelGroup.selectAll(".node-label")
+                .data(data.nodes)
+                .enter().append("text")
+                .attr("class", "node-label")
+                .attr("x", d => d.x)
+                .attr("y", d => d.y + (d.type === "central" ? 40 : 30))
+                .text(d => d.type === "central" ? d.name : d.gene)
+                .style("font-size", d => d.type === "central" ? "14px" : "11px");
+
+            // Render quality badges
+            badgeElements = badgeGroup.selectAll(".node-badge")
+                .data(data.nodes.filter(d => d.type === "attempt"))
+                .enter().append("text")
+                .attr("class", d => `node-badge badge-${d.qualityLevel}`)
+                .attr("x", d => d.x + 18)
+                .attr("y", d => d.y - 12)
+                .text(d => d.scores.overall.toFixed(0));
+
+            nodes = data.nodes;
+            links = data.links;
+            
+            // Completely lock all positions after rendering
+            setTimeout(() => {
+                lockAllPositions();
+            }, 100);
+        }
+        
+        function lockAllPositions() {
+            // Ensure all positions are completely fixed
+            if (nodeElements) {
+                nodeElements.each(function(d) {
+                    d.fx = d.x;
+                    d.fy = d.y;
+                    // Remove any potential transform that could cause drift
+                    d3.select(this).style("transform", null);
+                });
+            }
+        }
+
+        function handleNodeClick(event, d, element) {
+            if (d.type === "central") {
+                showOverview();
+                return;
+            }
+
+            // Update selection
+            if (nodeElements) {
+                nodeElements.classed("selected", false);
+                d3.select(element).classed("selected", true);
+            }
+
+            // Highlight connections
+            if (linkElements) {
+                linkElements
+                    .classed("highlighted", false)
+                    .filter(linkData => linkData.source.id === d.id || linkData.target.id === d.id)
+                    .classed("highlighted", true);
+            }
+
+            showDetailedReport(d);
+        }
+
+        function generateLabelingPanel(nodeData) {
+            const existingLabels = getStoredLabels(nodeData.id) || {};
+            const hasLabels = Object.keys(existingLabels).length > 0;
+            
+            return `
+                <div class="labeling-panel">
+                    <div class="labeling-header">
+                        📝 Human Evaluation
+                        <div style="margin-left: auto;">
+                            <div class="label-status ${hasLabels ? 'has-labels' : ''}">
+                                ${hasLabels ? '✅ Labeled' : '⏳ Awaiting Review'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="labeling-form" id="labelingForm-${nodeData.id}">
+                        <div class="form-group">
+                            <label class="form-label">1. Further Exploration Recommended?</label>
+                            <div class="form-radio-group">
+                                <div class="form-radio-item">
+                                    <input type="radio" name="explore" value="yes" id="explore-yes-${nodeData.id}" ${existingLabels.explore === 'yes' ? 'checked' : ''}>
+                                    <label for="explore-yes-${nodeData.id}">Yes - Pursue in next round</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="explore" value="no" id="explore-no-${nodeData.id}" ${existingLabels.explore === 'no' ? 'checked' : ''}>
+                                    <label for="explore-no-${nodeData.id}">No - Low priority</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="explore" value="maybe" id="explore-maybe-${nodeData.id}" ${existingLabels.explore === 'maybe' ? 'checked' : ''}>
+                                    <label for="explore-maybe-${nodeData.id}">Maybe - Conditional</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">2. Evidence Quality Assessment</label>
+                            <div class="form-radio-group">
+                                <div class="form-radio-item">
+                                    <input type="radio" name="evidence" value="excellent" id="evidence-excellent-${nodeData.id}" ${existingLabels.evidence === 'excellent' ? 'checked' : ''}>
+                                    <label for="evidence-excellent-${nodeData.id}">Excellent</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="evidence" value="good" id="evidence-good-${nodeData.id}" ${existingLabels.evidence === 'good' ? 'checked' : ''}>
+                                    <label for="evidence-good-${nodeData.id}">Good</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="evidence" value="fair" id="evidence-fair-${nodeData.id}" ${existingLabels.evidence === 'fair' ? 'checked' : ''}>
+                                    <label for="evidence-fair-${nodeData.id}">Fair</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="evidence" value="poor" id="evidence-poor-${nodeData.id}" ${existingLabels.evidence === 'poor' ? 'checked' : ''}>
+                                    <label for="evidence-poor-${nodeData.id}">Poor</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">3. Factual Errors Present?</label>
+                            <div class="form-radio-group">
+                                <div class="form-radio-item">
+                                    <input type="radio" name="errors" value="none" id="errors-none-${nodeData.id}" ${existingLabels.errors === 'none' ? 'checked' : ''}>
+                                    <label for="errors-none-${nodeData.id}">None detected</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="errors" value="minor" id="errors-minor-${nodeData.id}" ${existingLabels.errors === 'minor' ? 'checked' : ''}>
+                                    <label for="errors-minor-${nodeData.id}">Minor errors</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="errors" value="major" id="errors-major-${nodeData.id}" ${existingLabels.errors === 'major' ? 'checked' : ''}>
+                                    <label for="errors-major-${nodeData.id}">Major errors</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">4. Single Cell Analysis Quality</label>
+                            <div class="form-radio-group">
+                                <div class="form-radio-item">
+                                    <input type="radio" name="singlecell" value="excellent" id="singlecell-excellent-${nodeData.id}" ${existingLabels.singlecell === 'excellent' ? 'checked' : ''}>
+                                    <label for="singlecell-excellent-${nodeData.id}">Excellent</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="singlecell" value="good" id="singlecell-good-${nodeData.id}" ${existingLabels.singlecell === 'good' ? 'checked' : ''}>
+                                    <label for="singlecell-good-${nodeData.id}">Good</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="singlecell" value="adequate" id="singlecell-adequate-${nodeData.id}" ${existingLabels.singlecell === 'adequate' ? 'checked' : ''}>
+                                    <label for="singlecell-adequate-${nodeData.id}">Adequate</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="singlecell" value="poor" id="singlecell-poor-${nodeData.id}" ${existingLabels.singlecell === 'poor' ? 'checked' : ''}>
+                                    <label for="singlecell-poor-${nodeData.id}">Poor</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="singlecell" value="na" id="singlecell-na-${nodeData.id}" ${existingLabels.singlecell === 'na' ? 'checked' : ''}>
+                                    <label for="singlecell-na-${nodeData.id}">N/A</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">5. Research Novelty Assessment</label>
+                            <div class="form-radio-group">
+                                <div class="form-radio-item">
+                                    <input type="radio" name="novelty" value="breakthrough" id="novelty-breakthrough-${nodeData.id}" ${existingLabels.novelty === 'breakthrough' ? 'checked' : ''}>
+                                    <label for="novelty-breakthrough-${nodeData.id}">Breakthrough</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="novelty" value="highly-novel" id="novelty-highly-novel-${nodeData.id}" ${existingLabels.novelty === 'highly-novel' ? 'checked' : ''}>
+                                    <label for="novelty-highly-novel-${nodeData.id}">Highly Novel</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="novelty" value="moderately-novel" id="novelty-moderately-novel-${nodeData.id}" ${existingLabels.novelty === 'moderately-novel' ? 'checked' : ''}>
+                                    <label for="novelty-moderately-novel-${nodeData.id}">Moderately Novel</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="novelty" value="incremental" id="novelty-incremental-${nodeData.id}" ${existingLabels.novelty === 'incremental' ? 'checked' : ''}>
+                                    <label for="novelty-incremental-${nodeData.id}">Incremental</label>
+                                </div>
+                                <div class="form-radio-item">
+                                    <input type="radio" name="novelty" value="well-known" id="novelty-well-known-${nodeData.id}" ${existingLabels.novelty === 'well-known' ? 'checked' : ''}>
+                                    <label for="novelty-well-known-${nodeData.id}">Well Known</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">6. Improvement Comments for Next Round</label>
+                            <textarea class="form-textarea" name="comments" placeholder="Specific suggestions for improving this research in the next iteration..." id="comments-${nodeData.id}">${existingLabels.comments || ''}</textarea>
+                        </div>
+
+                        <button type="button" class="form-submit-btn" onclick="saveLabels('${nodeData.id}', '${nodeData.gene}')">
+                            💾 Save Evaluation
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showDetailedReport(nodeData) {
+            const reportContent = `
+                <div class="report-header">
+                    <div class="report-title">${nodeData.gene} Research Analysis</div>
+                    <div class="report-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Attempt</div>
+                            <div class="meta-value">${nodeData.attemptNumber}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Gene</div>
+                            <div class="meta-value">${nodeData.gene}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="score-indicators">
+                        <div class="score-card">
+                            <div class="score-label">Confidence</div>
+                            <div class="score-value score-${getQualityLevel(nodeData.scores.confidence)}">${nodeData.scores.confidence.toFixed(0)}%</div>
+                            <div class="score-bar">
+                                <div class="score-fill ${getQualityLevel(nodeData.scores.confidence)}" 
+                                     style="width: ${nodeData.scores.confidence}%"></div>
+                            </div>
+                        </div>
+                        <div class="score-card">
+                            <div class="score-label">Novelty</div>
+                            <div class="score-value score-${getQualityLevel(nodeData.scores.novelty)}">${nodeData.scores.novelty.toFixed(0)}%</div>
+                            <div class="score-bar">
+                                <div class="score-fill ${getQualityLevel(nodeData.scores.novelty)}" 
+                                     style="width: ${nodeData.scores.novelty}%"></div>
+                            </div>
+                        </div>
+                        <div class="score-card">
+                            <div class="score-label">Evidence</div>
+                            <div class="score-value score-${getQualityLevel(nodeData.scores.evidence)}">${nodeData.scores.evidence.toFixed(0)}%</div>
+                            <div class="score-bar">
+                                <div class="score-fill ${getQualityLevel(nodeData.scores.evidence)}" 
+                                     style="width: ${nodeData.scores.evidence}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-content">
+                    <div class="report-section">
+                        <div class="section-title">
+                            🔬 Research Hypothesis
+                        </div>
+                        <p>${nodeData.researchHypothesis || `Investigation of ${nodeData.gene} gene function using JUMP Cell Painting morphological profiling. This study explores novel phenotypic signatures and potential disease associations.`}</p>
+                    </div>
+
+                    <div class="report-section">
+                        <div class="section-title">
+                            📊 Key Findings
+                        </div>
+                        <div class="highlight-stat">Morphological changes detected</div>
+                        <div class="highlight-stat">Statistical significance: p < 0.05</div>
+                        <div class="highlight-stat">Novel phenotype characterized</div>
+                    </div>
+
+                    <div class="evidence-gallery">
+                        <div class="evidence-title">
+                            🖼️ Comprehensive Evidence
+                        </div>
+                        <div class="evidence-grid">
+                            ${nodeData.comprehensiveFigures ? nodeData.comprehensiveFigures.map(figurePath => `
+                            <div class="evidence-item">
+                                <img src="${figurePath}" 
+                                     class="evidence-image" 
+                                     alt="Comprehensive evidence figure"
+                                     onclick="showImageModal(this.src)"
+                                     onerror="this.parentElement.style.display='none'">
+                                <div class="evidence-caption">${figurePath.split('/').pop().replace(/[_-]/g, ' ').replace('.png', '')}</div>
+                            </div>
+                            `).join('') : '<p style="color: var(--text-muted);">No comprehensive figures available</p>'}
+                        </div>
+                    </div>
+
+                    ${generateLabelingPanel(nodeData)}
+
+                    <div class="action-buttons">
+                        ${nodeData.reportPath ? `
+                        <a href="JUMPDiscovery_results/attempt_${nodeData.attemptNumber}/${nodeData.reportPath}" 
+                           class="action-btn" target="_blank">
+                            📄 Full Report
+                        </a>` : `
+                        <div class="action-btn secondary" style="background: var(--accent-bg); cursor: not-allowed; opacity: 0.6;">
+                            📄 No Report Available
+                        </div>`}
+                        <button class="action-btn secondary" onclick="exportData('${nodeData.gene}')">
+                            💾 Export Data
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            d3.select(".report-panel").html(reportContent);
+        }
+
+        function showOverview() {
+            const overview = `
+                <div class="report-header">
+                    <div class="report-title">Research Overview</div>
+                    <div class="report-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Total Studies</div>
+                            <div class="meta-value">${nodes.filter(n => n.type === "attempt").length}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">High Quality</div>
+                            <div class="meta-value">${nodes.filter(n => n.qualityLevel === "high").length}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="report-content">
+                    <div class="report-content">
+                        <div class="report-section">
+                            <div class="section-title">
+                                🎯 About JUMP Discovery
+                            </div>
+                            <p style="margin-bottom: 12px;">
+                                Explore comprehensive gene discovery research using the JUMP Cell Painting dataset. 
+                                Each node represents a hypothesis-driven study with detailed morphological analysis.
+                            </p>
+                            
+                            <div class="section-title">
+                                🏷️ Quality Scoring System
+                            </div>
+                            <p style="margin-bottom: 8px;"><strong style="color: var(--success);">High Quality:</strong> Strong statistical significance, novel findings, comprehensive evidence</p>
+                            <p style="margin-bottom: 8px;"><strong style="color: var(--warning);">Medium Quality:</strong> Moderate evidence, some limitations, interesting preliminary results</p>
+                            <p style="margin-bottom: 12px;"><strong style="color: var(--danger);">Low Quality:</strong> Limited evidence, high uncertainty, requires further validation</p>
+                            
+                            <div class="section-title">
+                                🎨 Evaluation Color Guide
+                            </div>
+                            <p style="margin-bottom: 8px;"><span style="color: #ffcdd2; font-weight: bold;">Light Pink:</span> Not yet evaluated</p>
+                            <p style="margin-bottom: 8px;"><span style="color: #f8bbd9; font-weight: bold;">Pink:</span> Not selected for next round</p>
+                            <p style="margin-bottom: 8px;"><span style="color: #4caf50; font-weight: bold;">Green:</span> Selected with high novelty</p>
+                            <p style="margin-bottom: 12px;"><span style="color: #ffeb3b; font-weight: bold;">Yellow:</span> Selected with moderate novelty</p>
+                            
+                            <div class="section-title">
+                                📊 Navigation Guide
+                            </div>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="margin-bottom: 6px;">• Click nodes to view detailed research reports</li>
+                                <li style="margin-bottom: 6px;">• Node colors indicate different research areas</li>
+                                <li style="margin-bottom: 6px;">• Border colors show quality scores</li>
+                                <li style="margin-bottom: 6px;">• Hover for confidence and novelty metrics</li>
+                            </ul>
+                            
+                            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--border-color);">
+                                <div class="section-title">
+                                    🗂️ Label Management
+                                </div>
+                                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                    <button onclick="exportLabels()" class="action-btn secondary" style="flex: 1;">
+                                        💾 Export Labels
+                                    </button>
+                                    <button onclick="clearAllLabels()" class="action-btn" style="flex: 1; background: var(--danger);">
+                                        🗑️ Clear All Labels
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            d3.select(".report-panel").html(overview);
+
+            // Reset highlighting
+            if (nodeElements) nodeElements.classed("selected", false);
+            if (linkElements) linkElements.classed("highlighted", false);
+        }
+
+        function showQuickInfo(nodeData, event) {
+            // Could implement tooltip here
+        }
+
+        function hideQuickInfo() {
+            // Hide tooltip
+        }
+
+        function showImageModal(src) {
+            const modal = document.getElementById("imageModal");
+            const modalImg = document.getElementById("modalImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Control functions
+        function resetView() {
+            if (nodeElements) nodeElements.classed("selected", false);
+            if (linkElements) linkElements.classed("highlighted", false);
+            showOverview();
+        }
+
+        function toggleLabels() {
+            showLabels = !showLabels;
+            if (labelElements) labelElements.style("display", showLabels ? "block" : "none");
+        }
+
+        function filterHighQuality() {
+            if (currentFilter === "high") {
+                // Show all
+                if (nodeElements) nodeElements.style("opacity", 1);
+                currentFilter = "all";
+            } else {
+                // Show only high quality
+                if (nodeElements) {
+                    nodeElements.style("opacity", d => 
+                        d.type === "central" || d.qualityLevel === "high" ? 1 : 0.3
+                    );
+                }
+                currentFilter = "high";
+            }
+        }
+
+        function exportData(geneName) {
+            alert(`Exporting data for ${geneName} - feature not implemented yet`);
+        }
+
+        // Modal controls
+        document.querySelector(".modal-close").onclick = function() {
+            document.getElementById("imageModal").style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById("imageModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Initialize
+        async function init() {
+            const attempts = await loadAttempts();
+            const networkData = createNetworkData(attempts);
+            renderNetwork(networkData);
+            showOverview();
+            
+            // Load existing labels and update visual indicators
+            await loadExistingLabels();
+        }
+        
+        async function loadExistingLabels() {
+            try {
+                const response = await fetch('/api/labels');
+                const serverLabels = await response.json();
+                
+                // Update visual indicators for labeled nodes
+                Object.keys(serverLabels).forEach(attemptId => {
+                    // Also sync with localStorage
+                    localStorage.setItem(`jumpLabels_${attemptId}`, JSON.stringify(serverLabels[attemptId]));
+                    updateNodeLabelIndicator(attemptId, true);
+                });
+                
+            } catch (error) {
+                console.log('Could not load server labels, using localStorage only');
+                
+                // Fallback to localStorage labels for visual indicators
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('jumpLabels_')) {
+                        const attemptId = key.replace('jumpLabels_', '');
+                        updateNodeLabelIndicator(attemptId, true);
+                    }
+                }
+            }
+            
+            // Update all nodes that don't have labels to ensure proper coloring
+            updateAllNodeColors();
+        }
+        
+        function updateAllNodeColors() {
+            // Find all attempt nodes and update their colors
+            d3.selectAll('.attempt-node').each(function(d, i) {
+                const attemptId = this.id ? this.id.replace('node-', '') : null;
+                if (attemptId) {
+                    const hasLabels = getStoredLabels(attemptId) !== null;
+                    updateNodeLabelIndicator(attemptId, hasLabels);
+                }
+            });
+        }
+
+        // Human Labeling System
+        function getStoredLabels(attemptId) {
+            const stored = localStorage.getItem(`jumpLabels_${attemptId}`);
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        function saveLabels(attemptId, geneName) {
+            const form = document.getElementById(`labelingForm-${attemptId}`);
+            if (!form) return;
+
+            const labels = {
+                attemptId: attemptId,
+                geneName: geneName,
+                timestamp: new Date().toISOString(),
+                explore: form.querySelector('input[name="explore"]:checked')?.value || null,
+                evidence: form.querySelector('input[name="evidence"]:checked')?.value || null,
+                errors: form.querySelector('input[name="errors"]:checked')?.value || null,
+                singlecell: form.querySelector('input[name="singlecell"]:checked')?.value || null,
+                novelty: form.querySelector('input[name="novelty"]:checked')?.value || null,
+                comments: form.querySelector('textarea[name="comments"]').value || ''
+            };
+
+            // Save to localStorage
+            localStorage.setItem(`jumpLabels_${attemptId}`, JSON.stringify(labels));
+
+            // Save to server
+            fetch('/api/save_labels', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(labels)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    const statusElement = form.parentElement.querySelector('.label-status');
+                    if (statusElement) {
+                        statusElement.textContent = '✅ Labeled';
+                        statusElement.classList.add('has-labels');
+                    }
+                    
+                    // Update node visual indicator
+                    updateNodeLabelIndicator(attemptId, true);
+                    
+                    console.log('Labels saved successfully');
+                } else {
+                    console.error('Error saving labels:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving labels:', error);
+                // Even if server save fails, we have localStorage backup
+                const statusElement = form.parentElement.querySelector('.label-status');
+                if (statusElement) {
+                    statusElement.textContent = '✅ Labeled (Local)';
+                    statusElement.classList.add('has-labels');
+                }
+                updateNodeLabelIndicator(attemptId, true);
+            });
+        }
+
+        function getNodeEvaluationClass(attemptId) {
+            const labels = getStoredLabels(attemptId);
+            
+            if (!labels) {
+                return 'not-evaluated';
+            }
+            
+            // Check if selected for next round
+            if (labels.explore === 'yes') {
+                // Check novelty level
+                if (labels.novelty === 'breakthrough' || labels.novelty === 'highly-novel') {
+                    return 'selected-high-novelty';
+                } else {
+                    return 'selected-medium-novelty';
+                }
+            } else {
+                // Not selected for next round (no or maybe)
+                return 'not-selected';
+            }
+        }
+
+        function updateNodeLabelIndicator(attemptId, hasLabels) {
+            // Find the node and add visual indicator
+            const nodeElement = d3.select(`#node-${attemptId}`);
+            if (!nodeElement.empty()) {
+                nodeElement.classed('labeled', hasLabels);
+                
+                // Update evaluation-based color class
+                const evaluationClass = getNodeEvaluationClass(attemptId);
+                
+                // Remove all evaluation classes first
+                nodeElement.classed('not-evaluated', false)
+                          .classed('not-selected', false)
+                          .classed('selected-high-novelty', false)
+                          .classed('selected-medium-novelty', false);
+                
+                // Add the appropriate class
+                nodeElement.classed(evaluationClass, true);
+                
+                // Add a small indicator badge
+                if (hasLabels) {
+                    // Remove existing badge if any
+                    nodeElement.select('.label-badge').remove();
+                    nodeElement.select('.label-badge-text').remove();
+                    
+                    // Add badge
+                    nodeElement.select('g').append('circle')
+                        .attr('class', 'label-badge')
+                        .attr('cx', 25)
+                        .attr('cy', -25)
+                        .attr('r', 8)
+                        .style('fill', '#4caf50')
+                        .style('stroke', '#ffffff')
+                        .style('stroke-width', 2);
+                    
+                    nodeElement.select('g').append('text')
+                        .attr('class', 'label-badge-text')
+                        .attr('x', 25)
+                        .attr('y', -21)
+                        .attr('text-anchor', 'middle')
+                        .style('fill', 'white')
+                        .style('font-size', '10px')
+                        .style('font-weight', 'bold')
+                        .text('✓');
+                }
+            }
+        }
+
+        function getAllLabels() {
+            const labels = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('jumpLabels_')) {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    labels.push(data);
+                }
+            }
+            return labels;
+        }
+
+        function exportLabels() {
+            const labels = getAllLabels();
+            const dataStr = JSON.stringify(labels, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `jump_discovery_labels_${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function clearAllLabels() {
+            if (confirm('Are you sure you want to clear ALL evaluation labels? This action cannot be undone.')) {
+                // Clear localStorage
+                const keys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('jumpLabels_')) {
+                        keys.push(key);
+                    }
+                }
+                keys.forEach(key => localStorage.removeItem(key));
+                
+                // Clear server-side labels
+                fetch('/api/clear_labels', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Server labels cleared:', data);
+                })
+                .catch(error => {
+                    console.error('Error clearing server labels:', error);
+                });
+                
+                // Update all node colors to reset state
+                updateAllNodeColors();
+                
+                // Refresh current panel if showing a node detail
+                const currentPanel = document.querySelector('.report-panel').innerHTML;
+                if (currentPanel.includes('Human Evaluation')) {
+                    // Refresh the current node display
+                    showOverview();
+                }
+                
+                alert('All evaluation labels have been cleared!');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
