@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_40",
+  "geneName": "TH",
+  "timestamp": "2025-12-13T11:15:00.951Z",
+  "explore": "yes",
+  "evidence": "good",
+  "errors": "major",
+  "singlecell": "good",
+  "novelty": "moderately-novel",
+  "comments": "Factual errors present\n\n- In U2OS, “TH knockout → dopamine deficiency → PD-relevant mechanism” is not established. Keep PD links clearly as speculation unless you show dopamine synthesis machinery and dopamine drop in this system.\n\n- “Mitochondrial biogenesis” is not proven by MitoTracker intensity; it could reflect membrane potential, dye uptake, or morphology.\n\nTop fixes:\n\n- Reframe the claim: “TH perturbation induces increased MitoTracker signal” (then test whether it’s biogenesis vs potential).\n\n- Validate mechanism: PPARGC1A/NRF1/TFAM expression or mito biogenesis gene set; mtDNA copy number; TOMM20 area/count; OCR.\n\n- Strengthen controls: more CRISPR control wells, plate-matched controls, replicate-level stats (well as unit)."
+}

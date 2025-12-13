@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_41",
+  "geneName": "NOTCH2",
+  "timestamp": "2025-12-13T11:02:57.479Z",
+  "explore": "maybe",
+  "evidence": "fair",
+  "errors": "major",
+  "singlecell": "adequate",
+  "novelty": "moderately-novel",
+  "comments": "Major errors\n\nThe disease mechanistic link is off: Hajdu-Cheney is typically linked to NOTCH2 truncations with gain-of-function, so using a KO phenotype as a direct explanation is likely incorrect.\n\nImprovement Comments: \n- rule out segmentation artifacts for extreme spreading; \n- model at well/plate level; \n- validate focal adhesions directly (vinculin/paxillin/FAK) before committing to that mechanism.\n"
+}

@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_43",
+  "geneName": "TIMP3",
+  "timestamp": "2025-12-13T10:39:04.576Z",
+  "explore": "maybe",
+  "evidence": "good",
+  "errors": "minor",
+  "singlecell": "adequate",
+  "novelty": "moderately-novel",
+  "comments": "1. Fix/verify segmentation: your nucleus/cell ratios near ~1 suggest the cell mask may collapse to nucleus in many cells; show mask overlays + boundary QC metrics.\n\n2. Use correct statistical unit: analyze per-well (and/or mixed models with plate/well random effects), not pooled single-cell t-tests.\n\n3. Orthogonal validation: γH2AX/53BP1 for DNA damage; TMRM/JC-1 + MitoTracker Green for mito function vs mass; apoptosis/cell-cycle markers to explain density drop.\n\n4. Disentangle mechanism: TIMP3 effects can route via ADAM17/TNFR as well as ECM/integrins; design perturbation/rescue to separate them.\n\nGeneralize beyond U2OS: test at least one ECM-relevant line and ideally RPE (SFD/AMD relevance).\n\n5. Tone down claims: replace “direct/bidirectional/first” with “consistent with / suggests” until the above validations land."
+}
