@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_31",
+  "geneName": "PHYH",
+  "timestamp": "2025-12-13T11:53:06.681Z",
+  "explore": "no",
+  "evidence": "fair",
+  "errors": "minor",
+  "singlecell": "na",
+  "novelty": "incremental",
+  "comments": "Replace “mitochondrial dysfunction” with “mitochondrial intensity/morphology change” unless you add functional readouts (OCR, ATP, ROS, membrane potential with orthogonal dyes).\n\nShow per-well distributions, replicate consistency across plates/sites, and confirm the effect is not driven by cell count, confluence, segmentation quality, or cell-cycle residuals.\n\nUse multiple mitochondrial features (texture, area, object count, tubeness, radial distribution), not just intensity, and report whether they co-move.\n\nAddress multiple testing (FDR or permutation) since you screen many genes and features.\n\nStrengthen the disease link: test NOTCH3 perturbations with mitochondrial readouts (and ideally CADASIL-like NOTCH3 variants or VSMC models).\n\nFill the missing sections (comparators, similarity analysis, HPA/literature citations) and separate “data result” from “hypothesis/speculation.”"
+}

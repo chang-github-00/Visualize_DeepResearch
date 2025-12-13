@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_30",
+  "geneName": "CA4",
+  "timestamp": "2025-12-13T11:56:35.467Z",
+  "explore": "maybe",
+  "evidence": "good",
+  "errors": "minor",
+  "singlecell": "adequate",
+  "novelty": "incremental",
+  "comments": "Minor errors\n\n- Internal inconsistency: summary says ~40% drop, table shows ~50% (28.15 → 14.12).\n\n- Cohen’s d sign conventions look flipped (reductions reported with positive d, increases with negative d).\n\n- The “CA4 → RTA” framing is plausible via proximal tubule bicarbonate handling, but genetic causality is not established the way it is for classic inherited RTA genes (for example SLC4A4, CA2). \n\n- CA4 mutation link to RP17 is real (good), but RTA claim needs stronger sourcing.\n\n\nImprovement Comments for Next Round\n\n- Reanalyze using plate-matched negative controls for each KO plate; treat well as the unit of replication (mixed model or per-well summary).\n\n- Add basic QC: filter extreme cell area/intensity, edge-touching cells, and segmentation failures; report robustness to thresholds.\n\n- De-risk the MitoTracker readout: distinguish membrane potential vs mass (use multiple mito features beyond intensity; ideally validate with TMRM/JC-1 in follow-up).\n\n- Verify CA4 expression and KO efficiency in U2OS (otherwise phenotype could reflect off-targets or general perturbation stress).\n\n- Strengthen mechanism: directly measure intracellular pH (BCECF-AM or pHluorin) and test whether buffering rescues morphology.\n\n- Validate pathway logic inside JUMP: compare CA2/CA5A/CA5B and key transporters (SLC4A4, SLC9A1, ATP6V), and check whether they phenocopy."
+}

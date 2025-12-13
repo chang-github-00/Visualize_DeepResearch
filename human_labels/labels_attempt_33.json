@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_33",
+  "geneName": "SIRT6",
+  "timestamp": "2025-12-13T11:46:52.318Z",
+  "explore": "maybe",
+  "evidence": "fair",
+  "errors": "minor",
+  "singlecell": "good",
+  "novelty": "highly-novel",
+  "comments": "Avoid over-claiming “mitochondrial biogenesis”; say “increased mitochondrial signal consistent with increased mitochondrial content or activity” unless validated.\n\nReport per-well/per-plate effect sizes; do not rely on cell-level p-values (pseudo-replication). Use mixed-effects or aggregate-then-test.\n\nAnalyze more wells and sites (you listed many); show robustness across JCP IDs, plates, and sites.\n\nAdd object-based mitochondrial metrics (mito area, count, fragmentation/network texture) not just intensity.\n\nDisambiguate mito mass vs membrane potential (eg MitoTracker Green vs Red, TOMM20/COXIV IF, mtDNA copy number).\n\nControl for cell cycle (DNA content bins) when comparing mito/RNA/ER; report stratified effects.\n\nSanity-check segmentation and illumination; include QC plots (cell size, edge-cell removal, stain intensity distributions).\n\nTreat extreme fold-changes in preprocessed texture features as ranking signals; avoid quoting huge fold changes without explaining scaling/near-zero denominators.\n\nTighten “metabolic reprogramming” language; link RNA/ER decreases to “reduced anabolic state” and specify alternative explanations (cell cycle, staining).\n\nValidate proliferation claims with a direct proxy (EdU/Ki67 or growth curve); cell count in images is suggestive only.\n\nAdd a “specificity” check: compare to related perturbations (other sirtuins, HIF1A, PGC1A pathway genes) and show SIRT6 is distinct.\n\nKeep longevity framing in Discussion with citations; don’t present it as a direct conclusion from morphology alone."
+}

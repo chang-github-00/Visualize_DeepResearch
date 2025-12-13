@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_27",
+  "geneName": "DNA",
+  "timestamp": "2025-12-13T12:02:54.244Z",
+  "explore": "no",
+  "evidence": "fair",
+  "errors": "minor",
+  "singlecell": "adequate",
+  "novelty": "incremental",
+  "comments": "Recompute statistics with well as the unit (or mixed-effects with well/plate random effects); use plate-matched negcons.\n\nReport pooled-SD (Hedges g) and show per-well distributions; drop “unprecedented” language unless benchmarked.\n\nDisambiguate replication stress vs cell death: quantify nuclear area, DNA integrated intensity, “pyknotic” nuclei fraction, micronuclei rate, and include a simple apoptosis proxy if possible.\n\nUse standard CellProfiler texture/granularity features in addition to the Laplacian metric; confirm robustness to blur/illumination/threshold choices.\n\nAdd orthogonal validation: EdU, γH2AX/53BP1/RPA foci, cell-cycle phase, and (if claiming heterochromatin) H3K9me3."
+}

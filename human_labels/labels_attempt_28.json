@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_28",
+  "geneName": "PEX",
+  "timestamp": "2025-12-13T12:01:17.383Z",
+  "explore": "maybe",
+  "evidence": "fair",
+  "errors": "minor",
+  "singlecell": "adequate",
+  "novelty": "moderately-novel",
+  "comments": "Recompute stats at the well level (or mixed-effects with well/plate random effects); use plate-matched NEGCON for every plate.\n\nShow that the PEX10 phenotype holds across all replicate wells, not only selected wells/sites.\n\nDon’t equate intensity with “stress” or “biogenesis”: for mitochondria, separate mass vs membrane potential (orthogonal dyes or assays).\n\nAdd the missing Cell Painting channels (RNA, AGP) and check whether ER and mito changes are secondary to cell size, segmentation shifts, or cytoskeleton collapse.\n\nDirectly test the mechanistic claims: ER stress markers (BiP, CHOP, XBP1s) for PEX10; OCR/ROS/fragmentation for PEX1/6; plus rescue (re-expression) and pathway modifiers (antioxidants vs chemical chaperones).\n\nInclude a peroxisome readout (immunostain catalase/PMP70 or peroxisome reporter) since Cell Painting lacks a dedicated peroxisome channel."
+}

@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_22",
+  "geneName": "C1GALT1",
+  "timestamp": "2025-12-13T12:32:25.828Z",
+  "explore": "yes",
+  "evidence": "good",
+  "errors": "minor",
+  "singlecell": "good",
+  "novelty": "highly-novel",
+  "comments": "Biggest confound: ConA (ER channel) binds glycans. A glycosylation KO can change ConA signal without true ER expansion. Validate with orthogonal ER markers (ER-Tracker, calnexin/HSPA5 staining, Sec61, KDEL; ER area/skeletonization metrics).\n\nYour negative control plate mismatch (KO on CP-CC9-R3-06 vs control noted as CP-CC9-R1-06) can inflate p-values. Use same-plate, same-batch controls and report per-plate effects.\n\nBe careful on Tn syndrome genetics: often linked to COSMC (C1GALT1C1) loss causing secondary C1GALT1 inactivity; don’t over-attribute to C1GALT1 KO unless you cite/qualify.\n\nThe mitochondrial decrease could be MitoTracker potential rather than mass; validate with MitoTracker Green / TOM20 / mtDNA copy / OCR.\n\nReplace COSMC overexpression comparison with COSMC knockout (and C1GALT1 rescue) to make the pathway story causal.\n\nFor the mechanism claim (UPR): add XBP1 splicing, CHOP/DDIT3, BiP/HSPA5, ATF4 readouts; ideally show correlation with ER morphology at single-cell level."
+}

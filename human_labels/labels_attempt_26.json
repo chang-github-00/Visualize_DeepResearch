@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_26",
+  "geneName": "PTCH1",
+  "timestamp": "2025-12-13T12:06:01.588Z",
+  "explore": "yes",
+  "evidence": "good",
+  "errors": "minor",
+  "singlecell": "good",
+  "novelty": "highly-novel",
+  "comments": "Resolve the mito area contradiction: report both absolute mito area per cell and percent-of-cell area, plus the exact thresholding method and saturation checks.\n\nDisambiguate what MitoTracker intensity means: MitoTracker can reflect membrane potential as much as “mass”. Add integrated intensity, area, texture, and network metrics (skeleton length, branch points).\n\nDo statistics at the right level: summarize per well, then compare wells (or mixed model with plate and well as random effects).\n\nRule out imaging artifacts: show pixel saturation rates, illumination correction sanity checks, and background distributions for the mito channel.\n\nPathway validation inside JUMP: test whether perturbations of negative vs positive Hedgehog regulators move mitochondria in opposite directions (e.g., SUFU, GLI1/2/3, PTCH2, HHIP, KIF7 if present).\n\nMechanism strengthening: add a minimal “Hh activation readout” (GLI target expression, or at least morphology correlation with known Hh activators), and ideally an inhibitor-rescue (SMO inhibitor) in follow-up wet lab.\n\nBe more cautious on translational claims: keep “therapeutic vulnerability” as a prediction, not a conclusion, until you have functional OCR/ATP/ROS or inhibitor sensitivity data."
+}

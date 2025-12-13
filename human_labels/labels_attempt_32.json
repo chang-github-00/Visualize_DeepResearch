@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_32",
+  "geneName": "IFIH1",
+  "timestamp": "2025-12-13T11:50:05.646Z",
+  "explore": "maybe",
+  "evidence": "fair",
+  "errors": "major",
+  "singlecell": "adequate",
+  "novelty": "moderately-novel",
+  "comments": "Major errors\n\n- Reported Cohen’s d = 50 to 200+ is implausible in this setting and strongly suggests a calculation or normalization bug (for example near-zero SD after preprocessing, mixing levels, or using the wrong denominator).\n\n- The “OMIM: H00xxx” identifiers are not standard OMIM formatting and appear incorrect.\n\nImprovement Comments\n- Recompute effect sizes with a clear unit of analysis (well vs cell), correct SD, and report Hedges g plus confidence intervals; show distributions, not just summary tables.\n\n- Add sanity checks for staining artifacts: Mitotracker intensity can drop due to membrane potential loss or toxicity, not necessarily reduced mitochondrial mass. Include alternate mitochondrial metrics (texture, object area, perimeter, mito-to-cell area ratio) and viability proxies.\n\n- Strengthen the single-cell pipeline: use CellProfiler segmentation outputs if available, add QC filters (debris, edge cells, extreme areas), and report robustness across sites and wells.\n\n- Treat the pathway-wide claim carefully: many genes show massive “significant features” partly because of multiple testing and correlation structure. Add FDR control or permutation baselines, and emphasize effect consistency rather than raw feature counts.\n\n- Replicate across other cell lines / plates in JUMP (or at least multiple wells for raw-image single-cell analysis), and test whether the phenotype tracks with expression level (dose response).\n\n- Tone down mechanistic certainty: “MAVS link” is plausible, but the report currently jumps from localization to causality. Propose concrete tests (MAVS knockdown rescue, mitophagy markers, fusion/fission readouts).\n\n- Fix reference hygiene: correct disease identifiers, verify citations, and separate “known background” from “new result” to avoid overclaiming."
+}

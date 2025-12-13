@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_23",
+  "geneName": "NLRC5",
+  "timestamp": "2025-12-13T12:26:38.452Z",
+  "explore": "maybe",
+  "evidence": "good",
+  "errors": "minor",
+  "singlecell": "good",
+  "novelty": "moderately-novel",
+  "comments": "Fix the proliferation reduction math: your numbers imply ~51% drop (0.49 ratio), not 31%. Recompute per plate and report consistently with CIs/effect sizes.\n\nDon’t call it “mitochondrial depletion/dysfunction” from MitoTracker alone; report “reduced MitoTracker intensity” and validate mass vs membrane potential (TOM20/COXIV or mito-GFP; MitoTracker Green; TMRM/JC-1; mtDNA copy number; OCR).\n\n“Senescence” needs a specific marker panel: SA-β-gal, p16/p21 protein, Lamin B1 loss, SASP genes, Ki-67/EdU negative. Otherwise label as “growth arrest / low biosynthesis-like.”\n\nCell-cycle inference: use integrated DNA content (2N/4N) and/or an established CP cell-cycle classifier, not mean DNA intensity.\n\nAdd within-plate controls for each plate you compare (avoid one control well from a different plate). Include batch/illumination QC plots.\n\nDo a rescue (NLRC5 re-expression or CRISPRi vs KO) to confirm on-target phenotype; ideally test a second guide if available.\n\nStrengthen novelty/mechanism by checking profile similarity against known arrest/senescence perturbations (CDKN1A, CDKN2A, RB1, TP53, CCND1, etc.) and explicitly showing whether NLRC5 matches that cluster or is distinct."
+}

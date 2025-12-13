@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_38",
+  "geneName": "ZBTB20",
+  "timestamp": "2025-12-13T11:28:05.063Z",
+  "explore": "yes",
+  "evidence": "good",
+  "errors": "none",
+  "singlecell": "good",
+  "novelty": "highly-novel",
+  "comments": "What I would adjust (mainly claims)\n\n- Treat “cytoplasmic DNA accumulation” as a trend, not a headline. Your strongest metric is the nuc/cyto DNA ratio drop (p=0.0007). The “cytoplasmic DNA % +4.8%” is borderline (p=0.048) and is unlikely to survive correction if you tested many features. Suggested wording: “shift in nuclear vs cytoplasmic Hoechst signal, consistent with altered compartmentalization.”\n\n- DNA texture ≠ DNA damage (yet). “InfoMeas/texture changes” can reflect cell cycle, chromatin condensation, apoptosis, segmentation. Suggested wording: “nuclear DNA texture changes consistent with chromatin remodeling or damage, requiring orthogonal validation.”\n\n- Mito texture variance ≠ dysfunction (yet). It supports fragmentation/heterogeneity, but not function. Suggested wording: “mitochondrial morphology consistent with fragmentation; test membrane potential/OCR to call dysfunction.”\n\n- cGAS-STING and Primrose syndrome mechanism is speculative. Cytosolic DNA can activate cGAS-STING, but you have no pathway readouts. Also Primrose syndrome is typically heterozygous human mutations, while your model is KO in U2OS. Suggested wording: “a plausible mechanistic hypothesis for follow-up.”\n\nInternal consistency flags\n- Your “cytoplasmic DNA foci” metric is lower in KO (2.27 vs 3.42) and extremely noisy. That does not support “accumulation” unless you redefine what foci represent or show examples.\n\nWhat’s most defensible right now\n- Strong: DNA channel texture shift, nuc/cyto DNA ratio decrease, mito texture variance increase, cell area increase.\n\n- Weak: absolute increase in cytoplasmic DNA percentage as primary evidence.\n\n3 concrete upgrades that would make this solid\n\n1. Multiple-testing + effect sizes: report Cohen’s d and FDR; if the +4.8% cytoplasmic DNA does not hold, demote it.\n\n2. Orthogonal DNA damage markers: γH2AX, 53BP1, micronuclei scoring, comet assay.\n\n3. Direct cytosolic DNA / cGAS-STING readouts: cGAS-DNA colocalization IF, p-TBK1/p-IRF3, ISG qPCR; plus mtDNA-in-cytosol qPCR if you suspect mtDNA release."
+}

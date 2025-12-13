@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_21",
+  "geneName": "PARK2",
+  "timestamp": "2025-12-13T12:36:05.586Z",
+  "explore": "maybe",
+  "evidence": "fair",
+  "errors": "minor",
+  "singlecell": "adequate",
+  "novelty": "moderately-novel",
+  "comments": "Biggest red flag: ER/AGP effects are huge (2.5×, 5×) but controls look batch-mismatched (KO on R?-07 and “detailed” on R3-25 vs NegCon on R1-25). Re-do with same plate, same batch, same illumination, and report per-plate effect sizes.\n\nAGP channel confound: it’s Phalloidin + WGA (actin + Golgi/plasma-membrane glycoproteins). A 5× “actin/Golgi” claim needs orthogonal markers (phalloidin-only; GM130/TGN46; actin fiber metrics), not just mean intensity.\n\nIntensity artifacts: check background subtraction, saturation, and cell-thickness/area normalization (5× can come from staining/segmentation/flatfield). Add QC plots: per-image medians, histograms, illumination-corrected controls.\n\nER stress claim: validate with UPR markers (BiP/HSPA5, CHOP/DDIT3, XBP1s, ATF4) and ideally show correlation with ER morphology at single-cell level.\n\nMitophagy deficiency: MitoTracker is potential-dependent; add mito mass (MitoTracker Green / TOM20), mitophagy flux (mt-Keima, Parkin recruitment), and OCR/ATP/ROS.\n\nProliferation drop: distinguish slower cycling vs death (EdU/PI cell cycle, cleaved caspase-3, nuclear fragmentation rates).\n\nCausality: do PARK2 rescue (WT vs E3-dead mutant) and test whether ER-stress inhibitors (4-PBA/TUDCA) or cytoskeleton modulators partially rescue morphology."
+}

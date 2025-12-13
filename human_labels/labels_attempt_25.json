@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_25",
+  "geneName": "IRF3",
+  "timestamp": "2025-12-13T12:21:43.791Z",
+  "explore": "yes",
+  "evidence": "good",
+  "errors": "major",
+  "singlecell": "good",
+  "novelty": "moderately-novel",
+  "comments": "Major factual errors\n\nYour reported Cohen’s d = 3.28 exactly matching the 3.28-fold change is a red flag. Cohen’s d is a standardized mean difference (uses SD, typically pooled SD), not a fold-change. As written, the effect size math is almost certainly wrong or at least mis-described.\n\nMinor factual errors\n\nSAVI and AGS are best described as type I interferonopathies driven by upstream nucleic-acid sensing, with IRF3 often acting downstream via STING-TBK1-IRF3 signaling, rather than “IRF3 hyperactivation” being the primary lesion.\n\n\n\nImprovement comments\n\nFix the statistics: recompute Cohen’s d correctly (with pooled SD), report CI, and show per-plate d values plus an overall meta-estimate.\n\nDisentangle mito mass vs membrane potential: MitoTracker intensity can rise from higher ΔΨm, not more mitochondria. Add at least one potential-insensitive mass proxy (e.g., TOMM20 immunofluorescence, Mitotracker Green, mtDNA copy number).\n\nUse morphology, not just intensity: include network metrics (skeleton length, branching, fragmentation) and area/coverage measures that are robust to saturation.\n\nTest pathway specificity: compare IRF3 KO to perturbations in STING/TBK1 axis and mitophagy genes (PINK1, PRKN, ATG genes). STING signals through TBK1 to IRF3 for IFN induction. \nPMC\n\nTighten causal claims: keep “paradoxical beyond apoptosis” as a hypothesis, and cite the IRF3-BAX apoptotic mechanism and MI phenotype as context, not as proof for basal mitophagy regulation. \nWellman Center for Photomedicine\n\nLocalization claim: your “basal cytosolic, not mitochondrial” statement is consistent with HPA for unstimulated cells, cite it once and move on."
+}

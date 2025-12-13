@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_34",
+  "geneName": "RECQL4",
+  "timestamp": "2025-12-13T11:41:47.656Z",
+  "explore": "yes",
+  "evidence": "excellent",
+  "errors": "minor",
+  "singlecell": "good",
+  "novelty": "highly-novel",
+  "comments": "What’s strong\n\n- The ER-channel shift is huge (effect size-like behavior, not just p-values), and you have 5 biological replicates.\n\n- The “paradox” framing is interesting because RECQL4 is tightly connected to proliferation control in multiple contexts (for example via mitosis regulators like Aurora B in mechanistic studies). \n\n- The JUMP/U2OS context and Cell Painting setup are standard and interpretable for morphology-first discovery. \nJUMP-Cell Painting Consortium\n\n\nThe 3 main over-claims to fix\n\n- “ER stress” vs “ER expansion signature”\nCell Painting ER stain intensity supports “more ER-associated signal / ER expansion-like morphology,” but it does not, by itself, prove UPR activation or stress. Keep “ER stress” as a testable hypothesis until you measure XBP1 splicing, BiP, p-eIF2α, ATF4, CHOP, etc.\n\n- “Increased proliferation” inferred from “more cells detected”\nCell count from segmentation is a proxy for cell density, not a direct proliferation readout. It can also move with seeding, survival, clumping, segmentation failure modes. Rephrase as “higher apparent cell density / cell yield”, then validate with EdU, Ki67, growth curves, apoptosis markers.\n\n- RTS2 osteosarcoma risk number\n“32%” may be defensible depending on cohort, but many reviews summarize osteosarcoma prevalence around ~30% in Rothmund-Thomson syndrome with RECQL4 pathogenic variants. Consider stating a range and citing it. \n\n\nSmall factual wording tweaks\n\n- When you say “RECQL4 mutations cause RTS2, RAPADILINO, Baller-Gerold,” that’s correct, but cite a clean source (even a basic disease summary) and keep it simple. \n\n- “No prior studies link RECQL4 to ER stress”: I’d rewrite as “we did not find clear prior reports directly connecting RECQL4 loss to ER stress” (safer than “zero papers”)."
+}
