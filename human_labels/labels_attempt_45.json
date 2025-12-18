@@ -7,5 +7,5 @@
   "errors": "none",
   "singlecell": "excellent",
   "novelty": "breakthrough",
-  "comments": "Suggestions on the Following Attempt: \n  1. The fine-grained analysis of mitochondria is very interesting for FECH gene. There are several heme biosynthesis gene mentioned in the report in the pathway including ALAS1, ALAS2,…ABCB10. Conduct similar mitochondria analysis for these gene, try to cluster and see their similarity and differences in perturbation phenotype."
+  "comments": "Suggestions on the Following Attempt: \n  1. The fine-grained analysis of mitochondria is very interesting for FECH gene. There are several heme biosynthesis gene mentioned in the report in the pathway including ALAS1, ALAS2,…ABCB10. Conduct similar mitochondria analysis for these gene, try to cluster and see their similarity and differences in perturbation phenotype.\n 2. Go in further details to discuss the dysfunction of mitochondira, try to draw as many quantitized featuers as possible about fragmentation, mitophagy, network formation, etc. \n 3. Provide more detailed visualization of mitochondira morphology changes with cellprofiler, including representative cell crops, distribution plots, etc."
 }

@@ -47,7 +47,7 @@
                 "sidebar header report"
                 "sidebar main report";
             height: 100vh;
-            gap: 2px;
+            gap: 1px;
             background: var(--border-color);
         }
 
@@ -174,11 +174,11 @@
         }
 
         .meta-item {
-            background: var(--accent-bg);
+            background: rgba(59, 130, 246, 0.2);
             padding: 8px 12px;
             border-radius: 6px;
             text-align: center;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .meta-label {
@@ -259,13 +259,19 @@
             filter: drop-shadow(0 4px 16px rgba(79, 195, 247, 0.8));
         }
 
+        /* Disable hover effects for sub-attempt nodes to prevent movement */
+        .node[id*="_"]:hover {
+            transform: none;
+            filter: drop-shadow(0 2px 8px var(--shadow));
+        }
+
         .central-node {
             stroke: var(--accent-gold);
             stroke-width: 4px;
         }
 
         .attempt-node {
-            stroke: var(--border-color);
+            stroke: none;
         }
 
         .attempt-node.selected {
@@ -296,19 +302,19 @@
 
         /* Evaluation-based node colors */
         .attempt-node.not-evaluated {
-            fill: #ffcdd2 !important; /* Light pink - not evaluated */
+            fill: #fce7f3 !important; /* Light pink - not evaluated */
         }
 
         .attempt-node.not-selected {
-            fill: #f8bbd9 !important; /* Pink - not selected for next round */
+            fill: #fca5a5 !important; /* Light coral - not selected for next round */
         }
 
         .attempt-node.selected-high-novelty {
-            fill: #4caf50 !important; /* Green - selected with high novelty */
+            fill: #6ee7b7 !important; /* Light green - selected with high novelty */
         }
 
         .attempt-node.selected-medium-novelty {
-            fill: #ffeb3b !important; /* Yellow - selected with medium/low novelty */
+            fill: #fde68a !important; /* Light yellow - selected with medium/low novelty */
         }
 
         .label-badge {
@@ -321,24 +327,12 @@
             fill: var(--text-primary);
             text-anchor: middle;
             pointer-events: none;
-            text-shadow: 1px 1px 2px var(--primary-bg);
         }
 
-        .node-badge {
-            font-size: 8px;
-            font-weight: 700;
-            text-anchor: middle;
-            pointer-events: none;
-            text-shadow: 1px 1px 2px var(--primary-bg);
-        }
-
-        .badge-high { fill: var(--success); }
-        .badge-medium { fill: var(--warning); }
-        .badge-low { fill: var(--danger); }
 
         .link {
-            stroke: var(--border-color);
-            stroke-opacity: 0.6;
+            stroke: #94a3b8;
+            stroke-opacity: 0.4;
             stroke-width: 1.5px;
         }
 
@@ -361,6 +355,22 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        .evidence-section {
+            margin-bottom: 20px;
+        }
+
+        .evidence-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .evidence-grid {
@@ -401,6 +411,11 @@
         .report-content {
             line-height: 1.6;
             color: var(--text-secondary);
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
         }
 
         .report-section {
@@ -436,27 +451,34 @@
         }
 
         .action-btn {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-bg));
+            background: var(--accent-blue);
             color: white;
             padding: 10px 16px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
             font-weight: 600;
             transition: all 0.3s ease;
             text-decoration: none;
             text-align: center;
+            box-shadow: 0 2px 4px var(--shadow);
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow);
+            box-shadow: 0 6px 16px var(--shadow);
         }
 
         .action-btn.secondary {
-            background: linear-gradient(135deg, var(--accent-bg), var(--secondary-bg));
-            border: 1px solid var(--border-color);
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .action-btn.secondary:hover {
+            background: var(--secondary-bg);
+            border-color: var(--accent-blue);
         }
 
         /* Modal */
@@ -713,6 +735,8 @@
         <div class="header">
             <h1>🧬 JUMP Discovery Research Explorer</h1>
             <div class="header-controls">
+                <button class="control-btn" onclick="zoomIn()">Zoom In</button>
+                <button class="control-btn" onclick="zoomOut()">Zoom Out</button>
                 <button class="control-btn" onclick="resetView()">Reset View</button>
                 <button class="control-btn" onclick="toggleLabels()">Toggle Labels</button>
                 <button class="control-btn" onclick="filterHighQuality()">High Quality Only</button>
@@ -791,16 +815,29 @@
         const width = window.innerWidth - 60 - 400;
         const height = window.innerHeight - 60;
         
-        // SVG setup
+        // SVG setup with zoom functionality (pan only, no wheel zoom)
+        const zoomBehavior = d3.zoom()
+            .scaleExtent([0.3, 3]) // Allow zooming from 30% to 300%
+            .filter(function(event) {
+                // Disable wheel zoom, allow only pan (drag) and programmatic zoom
+                return event.type !== 'wheel';
+            })
+            .on("zoom", function(event) {
+                zoomGroup.attr("transform", event.transform);
+            });
+
         const svg = d3.select("#network")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .call(zoomBehavior);
+            
+        // Create a group for zoom/pan transformations
+        const zoomGroup = svg.append("g");
 
-        // Create groups for different layers
-        const linkGroup = svg.append("g").attr("class", "links");
-        const nodeGroup = svg.append("g").attr("class", "nodes");
-        const labelGroup = svg.append("g").attr("class", "labels");
-        const badgeGroup = svg.append("g").attr("class", "badges");
+        // Create groups for different layers inside the zoom group
+        const linkGroup = zoomGroup.append("g").attr("class", "links");
+        const nodeGroup = zoomGroup.append("g").attr("class", "nodes");
+        const labelGroup = zoomGroup.append("g").attr("class", "labels");
 
         // State management
         let showLabels = true;
@@ -809,7 +846,6 @@
         let nodeElements = null;
         let linkElements = null;
         let labelElements = null;
-        let badgeElements = null;
         let currentFilter = "all";
 
         // Quality scoring functions
@@ -881,9 +917,22 @@
                 fy: height / 2  // Lock y position
             };
 
-            // Create attempt nodes in circular layout with fixed positions
-            const attemptNodes = attempts.map((attempt, index) => {
-                const angle = (index / attempts.length) * 2 * Math.PI;
+            // Separate attempts_i and attempts_i_k nodes
+            const baseAttempts = [];
+            const subAttempts = [];
+            
+            attempts.forEach((attempt, index) => {
+                const isSubAttempt = attempt.id.includes('_') && attempt.id.split('_').length > 2;
+                if (isSubAttempt) {
+                    subAttempts.push(attempt);
+                } else {
+                    baseAttempts.push(attempt);
+                }
+            });
+
+            // Create base attempt nodes in circular layout
+            const baseAttemptNodes = baseAttempts.map((attempt, index) => {
+                const angle = (index / baseAttempts.length) * 2 * Math.PI;
                 const radius = Math.min(width, height) * 0.35;
                 const x = width / 2 + Math.cos(angle) * radius;
                 const y = height / 2 + Math.sin(angle) * radius;
@@ -899,11 +948,91 @@
                 };
             });
 
-            nodes = [centralNode, ...attemptNodes];
-            links = attemptNodes.map(node => ({
+            // Create sub-attempt nodes positioned near their parent base attempts
+            const subAttemptNodes = subAttempts.map((attempt, index) => {
+                // Extract parent attempt ID (attempts_i_k -> attempts_i)
+                const parts = attempt.id.split('_');
+                const parentId = parts.slice(0, 2).join('_'); // attempts_i
+                const k = parts[2]; // k value
+                
+                // Find parent node
+                const parentNode = baseAttemptNodes.find(node => node.id === parentId);
+                if (!parentNode) {
+                    // Fallback: position around center if no parent found
+                    const angle = (index / subAttempts.length) * 2 * Math.PI;
+                    const radius = Math.min(width, height) * 0.25;
+                    return {
+                        ...attempt,
+                        type: "attempt",
+                        displayName: `re_${k}`,
+                        x: width / 2 + Math.cos(angle) * radius,
+                        y: height / 2 + Math.sin(angle) * radius,
+                        fx: width / 2 + Math.cos(angle) * radius,
+                        fy: width / 2 + Math.sin(angle) * radius,
+                        qualityLevel: getQualityLevel(attempt.scores.overall)
+                    };
+                }
+                
+                // Group sub-attempts by parent for hierarchical positioning
+                const siblingSubAttempts = subAttempts.filter(sa => {
+                    const saParts = sa.id.split('_');
+                    return saParts.slice(0, 2).join('_') === parentId;
+                }).sort((a, b) => parseInt(a.id.split('_')[2]) - parseInt(b.id.split('_')[2])); // Sort by k value
+                
+                const subIndex = siblingSubAttempts.findIndex(sa => sa.id === attempt.id);
+                const totalSiblings = siblingSubAttempts.length;
+                
+                // Calculate direction vector from center to parent
+                const centerToParentX = parentNode.x - (width / 2);
+                const centerToParentY = parentNode.y - (height / 2);
+                const centerToParentAngle = Math.atan2(centerToParentY, centerToParentX);
+                
+                // Position sub-attempts in a hierarchical line extending outward from parent
+                const baseDistance = 60; // Distance from parent to first sub-attempt
+                const spacing = 45; // Distance between consecutive sub-attempts
+                const distance = baseDistance + (subIndex * spacing);
+                
+                // Position along the line extending outward from center through parent
+                const x = parentNode.x + Math.cos(centerToParentAngle) * distance;
+                const y = parentNode.y + Math.sin(centerToParentAngle) * distance;
+                
+                // Add slight perpendicular offset for multiple siblings to avoid overlap
+                const perpAngle = centerToParentAngle + Math.PI / 2;
+                const perpOffset = (subIndex - (totalSiblings - 1) / 2) * 20; // Spread siblings perpendicular to radial line
+                const finalX = x + Math.cos(perpAngle) * perpOffset;
+                const finalY = y + Math.sin(perpAngle) * perpOffset;
+                
+                return {
+                    ...attempt,
+                    type: "attempt",
+                    displayName: `re_${k}`,
+                    parentId: parentId,
+                    x: finalX,
+                    y: finalY,
+                    fx: finalX,  // Lock x position
+                    fy: finalY,  // Lock y position
+                    qualityLevel: getQualityLevel(attempt.scores.overall)
+                };
+            });
+
+            const allAttemptNodes = [...baseAttemptNodes, ...subAttemptNodes];
+            nodes = [centralNode, ...allAttemptNodes];
+            
+            // Create links: base attempts to central, sub-attempts to their parent base attempts
+            const baseLinks = baseAttemptNodes.map(node => ({
                 source: centralNode,
                 target: node
             }));
+            
+            const subLinks = subAttemptNodes.map(node => {
+                const parentNode = baseAttemptNodes.find(parent => parent.id === node.parentId);
+                return {
+                    source: parentNode || centralNode,
+                    target: node
+                };
+            });
+            
+            links = [...baseLinks, ...subLinks];
 
             return { nodes, links };
         }
@@ -944,8 +1073,9 @@
                 .attr("cy", d => d.y)
                 .attr("fill", d => {
                     if (d.type === "central") return "var(--accent-gold)";
+                    // Use softer, more beautiful colors for the white theme
                     const hue = (d.gene.charCodeAt(0) * 137.5) % 360;
-                    return d3.hsl(hue, 0.8, 0.65);
+                    return d3.hsl(hue, 0.6, 0.75); // Lighter and less saturated for white theme
                 })
                 .style("cursor", "pointer")
                 .on("click", function(event, d) {
@@ -963,24 +1093,31 @@
                 })
                 .style("pointer-events", "all");
 
-            // Render labels
+            // Render labels inside nodes
             labelElements = labelGroup.selectAll(".node-label")
                 .data(data.nodes)
                 .enter().append("text")
                 .attr("class", "node-label")
                 .attr("x", d => d.x)
-                .attr("y", d => d.y + (d.type === "central" ? 40 : 30))
-                .text(d => d.type === "central" ? d.name : d.gene)
-                .style("font-size", d => d.type === "central" ? "14px" : "11px");
+                .attr("y", d => d.y + 4) // Center vertically in the node
+                .text(d => {
+                    if (d.type === "central") return "JUMP";
+                    return d.displayName || d.gene;
+                })
+                .style("font-size", d => {
+                    if (d.type === "central") return "14px";
+                    // Adjust font size based on text length for better fit
+                    const text = d.displayName || d.gene;
+                    if (text.length <= 4) return "12px";
+                    if (text.length <= 6) return "11px";
+                    return "10px";
+                })
+                .style("font-weight", d => d.type === "central" ? "bold" : "600")
+                .style("fill", "#000000")
+                .style("text-anchor", "middle")
+                .style("dominant-baseline", "middle");
 
-            // Render quality badges
-            badgeElements = badgeGroup.selectAll(".node-badge")
-                .data(data.nodes.filter(d => d.type === "attempt"))
-                .enter().append("text")
-                .attr("class", d => `node-badge badge-${d.qualityLevel}`)
-                .attr("x", d => d.x + 18)
-                .attr("y", d => d.y - 12)
-                .text(d => d.scores.overall.toFixed(0));
+            // Remove quality badges - no longer needed
 
             nodes = data.nodes;
             links = data.links;
@@ -1024,6 +1161,84 @@
             }
 
             showDetailedReport(d);
+        }
+
+        function generateRankedImageGallery(figures) {
+            // Rank images by type
+            const comprehensive = [];
+            const analysis = [];
+            const segmentation = [];
+            const other = [];
+            
+            figures.forEach(figurePath => {
+                const filename = figurePath.toLowerCase();
+                
+                // Comprehensive category - highest priority
+                if (filename.includes('comprehensive') || 
+                    filename.includes('evidence') || 
+                    filename.includes('final') ||
+                    filename.includes('complete') ||
+                    filename.includes('summary') ||
+                    filename.includes('comparison') ||
+                    filename.includes('single')) {
+                    comprehensive.push(figurePath);
+                }
+                // Analysis category - medium priority
+                else if (filename.includes('analysis') ||
+                         filename.includes('feature') ||
+                         filename.includes('statistical') ||
+                         filename.includes('pathway') ||
+                         filename.includes('correlation') ||
+                         filename.includes('heatmap') ||
+                         filename.includes('plot') ||
+                         filename.includes('chart') ||
+                         filename.includes('graph') ||
+                         filename.includes('cell')) {
+                    analysis.push(figurePath);
+                }
+                // Segmentation category - lowest priority
+                else if (filename.includes('segmentation') ||
+                         filename.includes('segment') ||
+                         filename.includes('crop') ||
+                         filename.includes('individual') ||
+                         filename.includes('workflow') ||
+                         filename.includes('processing')) {
+                    segmentation.push(figurePath);
+                }
+                // Everything else
+                else {
+                    other.push(figurePath);
+                }
+            });
+            
+            function createImageSection(title, images, emoji) {
+                if (images.length === 0) return '';
+                
+                return `
+                    <div class="evidence-section">
+                        <div class="evidence-section-title">${emoji} ${title} (${images.length})</div>
+                        <div class="evidence-grid">
+                            ${images.map(figurePath => `
+                            <div class="evidence-item">
+                                <img src="${figurePath}" 
+                                     class="evidence-image" 
+                                     alt="${title} figure"
+                                     onclick="showImageModal(this.src)"
+                                     onerror="this.parentElement.style.display='none'">
+                                <div class="evidence-caption">${figurePath.split('/').pop().replace(/[_-]/g, ' ').replace(/\.(png|jpg|jpeg)$/i, '')}</div>
+                            </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return `
+                ${createImageSection('Comprehensive Evidence', comprehensive, '🎯')}
+                ${createImageSection('Analysis Results', analysis, '📊')}
+                ${createImageSection('Segmentation & Processing', segmentation, '🔬')}
+                ${createImageSection('Other Figures', other, '📄')}
+            `;
         }
 
         function generateLabelingPanel(nodeData) {
@@ -1165,6 +1380,40 @@
             `;
         }
 
+        function processMarkdownWithImages(text, attemptNumber) {
+            if (!text) return text;
+            
+            // Regular expression to find image file mentions (.png, .jpg, .jpeg)
+            const imageRegex = /([^\s]+\.(png|jpg|jpeg))/gi;
+            
+            return text.replace(imageRegex, (match, filename, extension) => {
+                // Construct the full path for the image
+                let imagePath;
+                
+                // If it's just a filename, construct the path
+                if (!filename.includes('/')) {
+                    imagePath = `JUMPDiscovery_results/attempt_${attemptNumber}/${filename}`;
+                } else {
+                    imagePath = filename;
+                }
+                
+                // Return embedded image with clickable functionality
+                return `
+                    <div class="inline-image-container" style="margin: 10px 0; text-align: center;">
+                        <img src="${imagePath}" 
+                             alt="${filename}" 
+                             class="inline-image"
+                             style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px var(--shadow);"
+                             onclick="showImageModal(this.src)"
+                             onerror="this.parentElement.innerHTML='<em style=\\"color: var(--text-muted);\\">Image not found: ${filename}</em>';">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px; font-style: italic;">
+                            ${filename}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         function showDetailedReport(nodeData) {
             const reportContent = `
                 <div class="report-header">
@@ -1213,7 +1462,7 @@
                         <div class="section-title">
                             🔬 Research Hypothesis
                         </div>
-                        <p>${nodeData.researchHypothesis || `Investigation of ${nodeData.gene} gene function using JUMP Cell Painting morphological profiling. This study explores novel phenotypic signatures and potential disease associations.`}</p>
+                        <div>${processMarkdownWithImages(nodeData.researchHypothesis || `Investigation of ${nodeData.gene} gene function using JUMP Cell Painting morphological profiling. This study explores novel phenotypic signatures and potential disease associations.`, nodeData.attemptNumber)}</div>
                     </div>
 
                     <div class="report-section">
@@ -1227,20 +1476,9 @@
 
                     <div class="evidence-gallery">
                         <div class="evidence-title">
-                            🖼️ Comprehensive Evidence
+                            🖼️ Evidence Gallery
                         </div>
-                        <div class="evidence-grid">
-                            ${nodeData.comprehensiveFigures ? nodeData.comprehensiveFigures.map(figurePath => `
-                            <div class="evidence-item">
-                                <img src="${figurePath}" 
-                                     class="evidence-image" 
-                                     alt="Comprehensive evidence figure"
-                                     onclick="showImageModal(this.src)"
-                                     onerror="this.parentElement.style.display='none'">
-                                <div class="evidence-caption">${figurePath.split('/').pop().replace(/[_-]/g, ' ').replace('.png', '')}</div>
-                            </div>
-                            `).join('') : '<p style="color: var(--text-muted);">No comprehensive figures available</p>'}
-                        </div>
+                        ${nodeData.comprehensiveFigures ? generateRankedImageGallery(nodeData.comprehensiveFigures) : '<p style="color: var(--text-muted);">No figures available</p>'}
                     </div>
 
                     ${generateLabelingPanel(nodeData)}
@@ -1357,9 +1595,26 @@
         }
 
         // Control functions
+        function zoomIn() {
+            svg.transition().duration(300).call(
+                zoomBehavior.scaleBy, 1.5
+            );
+        }
+
+        function zoomOut() {
+            svg.transition().duration(300).call(
+                zoomBehavior.scaleBy, 1 / 1.5
+            );
+        }
+
         function resetView() {
             if (nodeElements) nodeElements.classed("selected", false);
             if (linkElements) linkElements.classed("highlighted", false);
+            // Reset zoom and pan
+            svg.transition().duration(750).call(
+                zoomBehavior.transform,
+                d3.zoomIdentity
+            );
             showOverview();
         }
 
@@ -1372,14 +1627,66 @@
             if (currentFilter === "high") {
                 // Show all
                 if (nodeElements) nodeElements.style("opacity", 1);
+                if (linkElements) linkElements.style("opacity", 0.6);
+                if (labelElements) labelElements.style("opacity", 1);
                 currentFilter = "all";
             } else {
-                // Show only high quality
+                // Show only selected nodes (first layer) and all sub-attempts (second layer)
                 if (nodeElements) {
-                    nodeElements.style("opacity", d => 
-                        d.type === "central" || d.qualityLevel === "high" ? 1 : 0.3
-                    );
+                    nodeElements.style("opacity", d => {
+                        // Always show central node
+                        if (d.type === "central") return 1;
+                        
+                        // Show all sub-attempts (nodes with displayName like "re_x")
+                        if (d.displayName && d.displayName.startsWith("re_")) return 1;
+                        
+                        // For base attempts, show only those selected for next round
+                        // Check if they have the "selected" evaluation classes (green/yellow)
+                        const nodeElement = d3.select(`#node-${d.id}`);
+                        if (nodeElement.empty()) return 0.3;
+                        
+                        const isSelectedHighNovelty = nodeElement.classed("selected-high-novelty");
+                        const isSelectedMediumNovelty = nodeElement.classed("selected-medium-novelty");
+                        
+                        return (isSelectedHighNovelty || isSelectedMediumNovelty) ? 1 : 0;
+                    });
                 }
+                
+                // Also dim links that connect to hidden nodes
+                if (linkElements) {
+                    linkElements.style("opacity", d => {
+                        const sourceVisible = d.source.type === "central" || 
+                                            (d.source.displayName && d.source.displayName.startsWith("re_")) ||
+                                            d3.select(`#node-${d.source.id}`).classed("selected-high-novelty") ||
+                                            d3.select(`#node-${d.source.id}`).classed("selected-medium-novelty");
+                        const targetVisible = d.target.type === "central" || 
+                                            (d.target.displayName && d.target.displayName.startsWith("re_")) ||
+                                            d3.select(`#node-${d.target.id}`).classed("selected-high-novelty") ||
+                                            d3.select(`#node-${d.target.id}`).classed("selected-medium-novelty");
+                        return (sourceVisible && targetVisible) ? 0.6 : 0;
+                    });
+                }
+                
+                // Also hide labels for hidden nodes
+                if (labelElements) {
+                    labelElements.style("opacity", d => {
+                        // Always show central node label
+                        if (d.type === "central") return 1;
+                        
+                        // Show all sub-attempt labels (nodes with displayName like "re_x")
+                        if (d.displayName && d.displayName.startsWith("re_")) return 1;
+                        
+                        // For base attempts, show only labels for those selected for next round
+                        const nodeElement = d3.select(`#node-${d.id}`);
+                        if (nodeElement.empty()) return 0;
+                        
+                        const isSelectedHighNovelty = nodeElement.classed("selected-high-novelty");
+                        const isSelectedMediumNovelty = nodeElement.classed("selected-medium-novelty");
+                        
+                        return (isSelectedHighNovelty || isSelectedMediumNovelty) ? 1 : 0;
+                    });
+                }
+                
                 currentFilter = "high";
             }
         }
