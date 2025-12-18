@@ -138,6 +138,108 @@
             overflow: hidden;
         }
 
+        /* Statistics View */
+        .statistics-view {
+            display: none;
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .statistics-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .statistics-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+
+        .statistics-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .round-section {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .round-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--accent-bg);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-percentage {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--primary-bg);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.8s ease;
+        }
+
+        .stat-explore-yes { color: var(--success); }
+        .stat-explore-no { color: var(--danger); }
+        .stat-explore-maybe { color: var(--warning); }
+        .stat-not-evaluated { color: var(--text-muted); }
+
+        .fill-explore-yes { background: var(--success); }
+        .fill-explore-no { background: var(--danger); }
+        .fill-explore-maybe { background: var(--warning); }
+        .fill-not-evaluated { background: var(--text-muted); }
+
         .visualization-container {
             position: relative;
             width: 100%;
@@ -714,7 +816,7 @@
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="sidebar-icon active" data-view="network" title="Network View">
+            <div class="sidebar-icon active" data-view="network" title="Network View" onclick="showNetworkView()">
                 🔗
             </div>
             <div class="sidebar-icon" data-view="grid" title="Grid View">
@@ -723,7 +825,7 @@
             <div class="sidebar-icon" data-view="timeline" title="Timeline">
                 📊
             </div>
-            <div class="sidebar-icon" data-view="stats" title="Statistics">
+            <div class="sidebar-icon" data-view="stats" title="Statistics" onclick="showStatisticsView()">
                 📈
             </div>
             <div class="sidebar-icon" data-view="settings" title="Settings">
@@ -751,6 +853,15 @@
                     <div class="loading-text">Loading JUMP Discovery data...</div>
                 </div>
                 <svg id="network"></svg>
+            </div>
+            
+            <!-- Statistics View -->
+            <div id="statisticsView" class="statistics-view">
+                <div class="statistics-header">
+                    <div class="statistics-title">📊 Human Labeling Statistics</div>
+                    <div class="statistics-subtitle">Breakdown of evaluation choices by research round</div>
+                </div>
+                <div id="statisticsContent"></div>
             </div>
         </div>
 
@@ -1469,9 +1580,10 @@
                         <div class="section-title">
                             📊 Key Findings
                         </div>
+                        ${nodeData.keyFindings ? processMarkdownWithImages(nodeData.keyFindings, nodeData.attemptNumber) : `
                         <div class="highlight-stat">Morphological changes detected</div>
                         <div class="highlight-stat">Statistical significance: p < 0.05</div>
-                        <div class="highlight-stat">Novel phenotype characterized</div>
+                        <div class="highlight-stat">Novel phenotype characterized</div>`}
                     </div>
 
                     <div class="evidence-gallery">
@@ -1592,6 +1704,350 @@
             const modalImg = document.getElementById("modalImage");
             modal.style.display = "block";
             modalImg.src = src;
+        }
+
+        // View switching functions
+        function showNetworkView() {
+            // Hide statistics view, show network
+            document.getElementById('statisticsView').style.display = 'none';
+            document.querySelector('.visualization-container').style.display = 'block';
+            
+            // Update sidebar icons
+            document.querySelectorAll('.sidebar-icon').forEach(icon => {
+                icon.classList.remove('active');
+            });
+            document.querySelector('[data-view="network"]').classList.add('active');
+        }
+
+        function showStatisticsView() {
+            // Show statistics view, hide network
+            document.getElementById('statisticsView').style.display = 'block';
+            document.querySelector('.visualization-container').style.display = 'none';
+            
+            // Update sidebar icons
+            document.querySelectorAll('.sidebar-icon').forEach(icon => {
+                icon.classList.remove('active');
+            });
+            document.querySelector('[data-view="stats"]').classList.add('active');
+            
+            // Generate statistics
+            generateStatistics();
+        }
+
+        function generateStatistics() {
+            const rounds = organizeDataByRounds();
+            const content = document.getElementById('statisticsContent');
+            
+            let html = '';
+            
+            rounds.forEach((round, index) => {
+                const stats = calculateRoundStatistics(round);
+                const roundNumber = index + 1;
+                
+                html += `
+                    <div class="round-section">
+                        <div class="round-title">
+                            🔄 Round ${roundNumber}
+                            <span style="font-size: 14px; color: var(--text-secondary);">(${round.length} attempts)</span>
+                        </div>
+                        
+                        <!-- Further Exploration -->
+                        <h4 style="color: var(--accent-blue); margin: 15px 0 10px 0;">1. Further Exploration Recommended?</h4>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Yes - Pursue</div>
+                                <div class="stat-value stat-explore-yes">${stats.explore.yes.count}</div>
+                                <div class="stat-percentage">${stats.explore.yes.percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill fill-explore-yes" style="width: ${stats.explore.yes.percentage}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-label">No - Low Priority</div>
+                                <div class="stat-value stat-explore-no">${stats.explore.no.count}</div>
+                                <div class="stat-percentage">${stats.explore.no.percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill fill-explore-no" style="width: ${stats.explore.no.percentage}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-label">Maybe - Conditional</div>
+                                <div class="stat-value stat-explore-maybe">${stats.explore.maybe.count}</div>
+                                <div class="stat-percentage">${stats.explore.maybe.percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill fill-explore-maybe" style="width: ${stats.explore.maybe.percentage}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-label">Not Evaluated</div>
+                                <div class="stat-value stat-not-evaluated">${stats.explore.notEvaluated.count}</div>
+                                <div class="stat-percentage">${stats.explore.notEvaluated.percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill fill-not-evaluated" style="width: ${stats.explore.notEvaluated.percentage}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Evidence Quality -->
+                        <h4 style="color: var(--accent-blue); margin: 15px 0 10px 0;">2. Evidence Quality Assessment</h4>
+                        <div class="stats-grid">
+                            ${['excellent', 'good', 'fair', 'poor', 'notEvaluated'].map(level => `
+                            <div class="stat-card">
+                                <div class="stat-label">${level === 'notEvaluated' ? 'Not Evaluated' : level.charAt(0).toUpperCase() + level.slice(1)}</div>
+                                <div class="stat-value ${getStatClass('evidence', level)}">${stats.evidence[level].count}</div>
+                                <div class="stat-percentage">${stats.evidence[level].percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${getFillClass('evidence', level)}" style="width: ${stats.evidence[level].percentage}%"></div>
+                                </div>
+                            </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Factual Errors -->
+                        <h4 style="color: var(--accent-blue); margin: 15px 0 10px 0;">3. Factual Errors Present?</h4>
+                        <div class="stats-grid">
+                            ${['none', 'minor', 'major', 'notEvaluated'].map(level => `
+                            <div class="stat-card">
+                                <div class="stat-label">${level === 'none' ? 'None Detected' : level === 'notEvaluated' ? 'Not Evaluated' : level.charAt(0).toUpperCase() + level.slice(1) + ' Errors'}</div>
+                                <div class="stat-value ${getStatClass('errors', level)}">${stats.errors[level].count}</div>
+                                <div class="stat-percentage">${stats.errors[level].percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${getFillClass('errors', level)}" style="width: ${stats.errors[level].percentage}%"></div>
+                                </div>
+                            </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Single Cell Analysis -->
+                        <h4 style="color: var(--accent-blue); margin: 15px 0 10px 0;">4. Single Cell Analysis Quality</h4>
+                        <div class="stats-grid">
+                            ${['excellent', 'good', 'adequate', 'poor', 'na', 'notEvaluated'].map(level => `
+                            <div class="stat-card">
+                                <div class="stat-label">${level === 'na' ? 'N/A' : level === 'notEvaluated' ? 'Not Evaluated' : level.charAt(0).toUpperCase() + level.slice(1)}</div>
+                                <div class="stat-value ${getStatClass('singlecell', level)}">${stats.singlecell[level].count}</div>
+                                <div class="stat-percentage">${stats.singlecell[level].percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${getFillClass('singlecell', level)}" style="width: ${stats.singlecell[level].percentage}%"></div>
+                                </div>
+                            </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Research Novelty -->
+                        <h4 style="color: var(--accent-blue); margin: 15px 0 10px 0;">5. Research Novelty Assessment</h4>
+                        <div class="stats-grid">
+                            ${['breakthrough', 'highly-novel', 'moderately-novel', 'incremental', 'well-known', 'notEvaluated'].map(level => `
+                            <div class="stat-card">
+                                <div class="stat-label">${level === 'notEvaluated' ? 'Not Evaluated' : level === 'highly-novel' ? 'Highly Novel' : level === 'moderately-novel' ? 'Moderately Novel' : level === 'well-known' ? 'Well Known' : level.charAt(0).toUpperCase() + level.slice(1)}</div>
+                                <div class="stat-value ${getStatClass('novelty', level)}">${stats.novelty[level].count}</div>
+                                <div class="stat-percentage">${stats.novelty[level].percentage}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${getFillClass('novelty', level)}" style="width: ${stats.novelty[level].percentage}%"></div>
+                                </div>
+                            </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+        }
+
+        function organizeDataByRounds() {
+            const rounds = {};
+            
+            // Group nodes by round (attempts_X vs attempts_X_Y)
+            nodes.filter(n => n.type === "attempt").forEach(node => {
+                const parts = node.id.split('_');
+                let roundKey;
+                
+                if (parts.length === 2) {
+                    // Base attempt (e.g., attempts_12)
+                    roundKey = 'round_1';
+                } else if (parts.length === 3) {
+                    // Sub-attempt (e.g., attempts_12_0)
+                    roundKey = 'round_2';
+                } else {
+                    roundKey = 'round_1'; // Fallback
+                }
+                
+                if (!rounds[roundKey]) {
+                    rounds[roundKey] = [];
+                }
+                rounds[roundKey].push(node);
+            });
+            
+            // Convert to array and sort
+            return Object.keys(rounds)
+                .sort()
+                .map(key => rounds[key]);
+        }
+
+        function calculateRoundStatistics(roundNodes) {
+            const stats = {
+                explore: {
+                    yes: { count: 0, percentage: 0 },
+                    no: { count: 0, percentage: 0 },
+                    maybe: { count: 0, percentage: 0 },
+                    notEvaluated: { count: 0, percentage: 0 }
+                },
+                evidence: {
+                    excellent: { count: 0, percentage: 0 },
+                    good: { count: 0, percentage: 0 },
+                    fair: { count: 0, percentage: 0 },
+                    poor: { count: 0, percentage: 0 },
+                    notEvaluated: { count: 0, percentage: 0 }
+                },
+                errors: {
+                    none: { count: 0, percentage: 0 },
+                    minor: { count: 0, percentage: 0 },
+                    major: { count: 0, percentage: 0 },
+                    notEvaluated: { count: 0, percentage: 0 }
+                },
+                singlecell: {
+                    excellent: { count: 0, percentage: 0 },
+                    good: { count: 0, percentage: 0 },
+                    adequate: { count: 0, percentage: 0 },
+                    poor: { count: 0, percentage: 0 },
+                    na: { count: 0, percentage: 0 },
+                    notEvaluated: { count: 0, percentage: 0 }
+                },
+                novelty: {
+                    breakthrough: { count: 0, percentage: 0 },
+                    'highly-novel': { count: 0, percentage: 0 },
+                    'moderately-novel': { count: 0, percentage: 0 },
+                    incremental: { count: 0, percentage: 0 },
+                    'well-known': { count: 0, percentage: 0 },
+                    notEvaluated: { count: 0, percentage: 0 }
+                }
+            };
+            
+            const total = roundNodes.length;
+            
+            roundNodes.forEach(node => {
+                const labels = getStoredLabels(node.id);
+                
+                // Count exploration decisions
+                if (!labels || !labels.explore) {
+                    stats.explore.notEvaluated.count++;
+                } else {
+                    const explore = labels.explore;
+                    if (stats.explore[explore]) {
+                        stats.explore[explore].count++;
+                    } else {
+                        stats.explore.notEvaluated.count++;
+                    }
+                }
+                
+                // Count evidence quality
+                if (!labels || !labels.evidence) {
+                    stats.evidence.notEvaluated.count++;
+                } else {
+                    const evidence = labels.evidence;
+                    if (stats.evidence[evidence]) {
+                        stats.evidence[evidence].count++;
+                    } else {
+                        stats.evidence.notEvaluated.count++;
+                    }
+                }
+                
+                // Count errors
+                if (!labels || !labels.errors) {
+                    stats.errors.notEvaluated.count++;
+                } else {
+                    const errors = labels.errors;
+                    if (stats.errors[errors]) {
+                        stats.errors[errors].count++;
+                    } else {
+                        stats.errors.notEvaluated.count++;
+                    }
+                }
+                
+                // Count single cell analysis
+                if (!labels || !labels.singlecell) {
+                    stats.singlecell.notEvaluated.count++;
+                } else {
+                    const singlecell = labels.singlecell;
+                    if (stats.singlecell[singlecell]) {
+                        stats.singlecell[singlecell].count++;
+                    } else {
+                        stats.singlecell.notEvaluated.count++;
+                    }
+                }
+                
+                // Count novelty assessment
+                if (!labels || !labels.novelty) {
+                    stats.novelty.notEvaluated.count++;
+                } else {
+                    const novelty = labels.novelty;
+                    if (stats.novelty[novelty]) {
+                        stats.novelty[novelty].count++;
+                    } else {
+                        stats.novelty.notEvaluated.count++;
+                    }
+                }
+            });
+            
+            // Calculate percentages for all categories
+            Object.keys(stats).forEach(category => {
+                Object.keys(stats[category]).forEach(key => {
+                    stats[category][key].percentage = total > 0 ? Math.round((stats[category][key].count / total) * 100) : 0;
+                });
+            });
+            
+            return stats;
+        }
+
+        function getStatClass(category, level) {
+            if (level === 'notEvaluated') return 'stat-not-evaluated';
+            
+            switch (category) {
+                case 'evidence':
+                case 'singlecell':
+                    if (level === 'excellent' || level === 'good') return 'stat-explore-yes';
+                    if (level === 'fair' || level === 'adequate') return 'stat-explore-maybe';
+                    if (level === 'poor') return 'stat-explore-no';
+                    break;
+                case 'errors':
+                    if (level === 'none') return 'stat-explore-yes';
+                    if (level === 'minor') return 'stat-explore-maybe';
+                    if (level === 'major') return 'stat-explore-no';
+                    break;
+                case 'novelty':
+                    if (level === 'breakthrough' || level === 'highly-novel') return 'stat-explore-yes';
+                    if (level === 'moderately-novel' || level === 'incremental') return 'stat-explore-maybe';
+                    if (level === 'well-known') return 'stat-explore-no';
+                    break;
+            }
+            return 'stat-not-evaluated';
+        }
+
+        function getFillClass(category, level) {
+            if (level === 'notEvaluated') return 'fill-not-evaluated';
+            
+            switch (category) {
+                case 'evidence':
+                case 'singlecell':
+                    if (level === 'excellent' || level === 'good') return 'fill-explore-yes';
+                    if (level === 'fair' || level === 'adequate') return 'fill-explore-maybe';
+                    if (level === 'poor') return 'fill-explore-no';
+                    break;
+                case 'errors':
+                    if (level === 'none') return 'fill-explore-yes';
+                    if (level === 'minor') return 'fill-explore-maybe';
+                    if (level === 'major') return 'fill-explore-no';
+                    break;
+                case 'novelty':
+                    if (level === 'breakthrough' || level === 'highly-novel') return 'fill-explore-yes';
+                    if (level === 'moderately-novel' || level === 'incremental') return 'fill-explore-maybe';
+                    if (level === 'well-known') return 'fill-explore-no';
+                    break;
+            }
+            return 'fill-not-evaluated';
         }
 
         // Control functions

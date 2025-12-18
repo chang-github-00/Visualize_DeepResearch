@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_45_1",
+  "geneName": "FECH",
+  "timestamp": "2025-12-18T00:55:18.897Z",
+  "explore": "yes",
+  "evidence": "fair",
+  "errors": "major",
+  "singlecell": "good",
+  "novelty": "highly-novel",
+  "comments": "The number of cells too small."
+}

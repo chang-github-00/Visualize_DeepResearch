@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_12_1",
+  "geneName": "FDPS",
+  "timestamp": "2025-12-18T00:31:39.606Z",
+  "explore": "yes",
+  "evidence": "good",
+  "errors": "minor",
+  "singlecell": "good",
+  "novelty": "highly-novel",
+  "comments": "segmentation misses some cells"
+}

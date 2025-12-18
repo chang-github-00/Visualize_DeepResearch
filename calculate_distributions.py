@@ -47,15 +47,20 @@ def map_labels_to_scores():
     }
 
 def calculate_distributions():
-    """Calculate distribution for each field in human_labels JSON files, excluding null values."""
+    """Calculate distribution for each field in human_labels JSON files, comparing first and second rounds."""
     
     labels_dir = "/Users/machang/Documents/research-work/CellMMAgent/Visualize_DeepResearch/human_labels"
-    distributions = defaultdict(Counter)
-    score_distributions = defaultdict(Counter)
     total_files = 0
     
-    # Store individual scores for box plot
-    score_data = {
+    # Store individual scores for both rounds
+    score_data_first = {
+        'Evidence': [],
+        'Errors': [],
+        'Single Cell Analysis': [],
+        'Novelty': []
+    }
+    
+    score_data_second = {
         'Evidence': [],
         'Errors': [],
         'Single Cell Analysis': [],
@@ -74,57 +79,67 @@ def calculate_distributions():
                     data = json.load(f)
                     total_files += 1
                     
+                    # Determine if this is first round (no underscore after attempt_X) or second round (has _Y suffix)
+                    # First round: labels_attempt_X.json
+                    # Second round: labels_attempt_X_Y.json
+                    is_second_round = filename.count('_') >= 3  # labels_attempt_X_Y has 3+ underscores
+                    
+                    # Choose appropriate data structure
+                    current_score_data = score_data_second if is_second_round else score_data_first
+                    
                     # Count values for each field, excluding null/empty values
                     for key, value in data.items():
-                        if key in ['attemptId', 'geneName', 'timestamp']:
-                            continue  # Skip ID fields
+                        if key in ['attemptId', 'geneName', 'timestamp', 'explore', 'comments']:
+                            continue  # Skip ID and non-scoring fields
                         
                         if value is not None and value != "" and value != "null":
-                            distributions[key][value] += 1
-                            
                             # Map to scores if applicable
                             if key in mappings and value in mappings[key]:
                                 score = mappings[key][value]
-                                score_distributions[f"{key}_score"][score] += 1
                                 
-                                # Store individual scores for box plot
+                                # Store individual scores
                                 if key == 'evidence':
-                                    score_data['Evidence'].append(score)
+                                    current_score_data['Evidence'].append(score)
                                 elif key == 'errors':
-                                    score_data['Errors'].append(score)
+                                    current_score_data['Errors'].append(score)
                                 elif key == 'singlecell':
-                                    score_data['Single Cell Analysis'].append(score)
+                                    current_score_data['Single Cell Analysis'].append(score)
                                 elif key == 'novelty':
-                                    score_data['Novelty'].append(score)
+                                    current_score_data['Novelty'].append(score)
             
             except (json.JSONDecodeError, FileNotFoundError) as e:
                 print(f"Error reading {filename}: {e}")
     
     print(f"Analyzed {total_files} files")
+    print(f"First round files: {sum(len(scores) for scores in score_data_first.values())}")
+    print(f"Second round files: {sum(len(scores) for scores in score_data_second.values())}")
     print("=" * 50)
     
-    # Create plots directory for box plot
+    # Create plots directory for plots
     plots_dir = "distribution_plots"
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
     
-    # Create stacked bar plot for performance distributions
+    # Create side-by-side stacked bar plot for performance distributions comparison
     criteria_with_data = []
     
-    for criterion, scores in score_data.items():
-        if scores:  # Only include criteria with data
+    # Find criteria that have data in either round
+    all_criteria = set(score_data_first.keys()) | set(score_data_second.keys())
+    for criterion in all_criteria:
+        if (criterion in score_data_first and score_data_first[criterion]) or \
+           (criterion in score_data_second and score_data_second[criterion]):
             criteria_with_data.append(criterion)
     
     if criteria_with_data:
-        # Set up the figure with Nature journal standards
-        plt.figure(figsize=(7, 4))  # Single column width for Nature
+        # Set up single figure for grouped comparison
+        plt.figure(figsize=(6, 3))
         plt.style.use('seaborn-v0_8-whitegrid')
         plt.rcParams.update({
-            'font.family': 'Arial',
+            'font.family': 'DejaVu Sans',
             'font.size': 8,
             'axes.linewidth': 0.5,
             'grid.linewidth': 0.5,
-            'lines.linewidth': 1.0,
+            'lines.linewidth': 0.8,
             'patch.linewidth': 0.5,
             'xtick.major.width': 0.5,
             'ytick.major.width': 0.5,
@@ -132,133 +147,154 @@ def calculate_distributions():
             'ytick.minor.width': 0.3,
         })
         
-        # Nature journal approved color scheme - grayscale with subtle color
+        # Color scheme from the provided palette
         score_colors = {
-            1: '#2D2D2D',  # Dark gray (poor)
-            2: '#5A5A5A',  # Medium dark gray (fair) 
-            3: '#878787',  # Medium gray (neutral)
-            4: '#B4B4B4',  # Light gray (good)
-            5: '#E0E0E0'   # Very light gray (excellent)
+            1: '#E58585',  # Coral/salmon (poor) - from RGB 229,133,119
+            3: '#F2B76F',  # Light orange (fair) - from RGB 242,187,124
+            2: '#FCB3D9',  # Light purple (fair) - from RGB 188,186,218
+            # 3: '#F8F8BB',  # Light yellow (neutral) - from RGB 250,248,187
+            4: '#BDD788',  # Light green/teal (good) - from RGB 156,207,198
+            5: '#B2E1F6'   # Light blue (excellent) - from RGB 138,176,207
         }
         
+        # Create grouped data - each criterion appears twice (first round, then second round)
+        proportions_data_grouped = []
+        labels_grouped = []
+        use_hatching = []
+        y_positions = []
         
-        # Calculate proportions for each criterion
-        proportions_data = []
-        labels = []
+        # Calculate positions with touching bars within groups
+        current_y = 0
+        group_spacing = 1.0  # Space between different criteria groups
+        bar_width = 0.7   # Bar width
         
         for criterion in criteria_with_data:
-            scores = score_data[criterion]
-            if scores:
-                # Count occurrences of each score
-                score_counts = Counter(scores)
-                total = len(scores)
-                
-                # Calculate proportions for scores 1-5
-                proportions = []
+            # First round data
+            scores_first = score_data_first.get(criterion, [])
+            if scores_first:
+                score_counts = Counter(scores_first)
+                total = len(scores_first)
+                proportions_first = []
                 for score in range(1, 6):
                     proportion = score_counts.get(score, 0) / total
-                    proportions.append(proportion)
-                
-                proportions_data.append(proportions)
-                labels.append(criterion)
+                    proportions_first.append(proportion)
+                proportions_data_grouped.append(proportions_first)
+            else:
+                proportions_data_grouped.append([0, 0, 0, 0, 0])
+            labels_grouped.append(f"{criterion}")
+            use_hatching.append(False)
+            y_positions.append(current_y)
+            
+            # Second round data (touching the first round bar)
+            current_y += bar_width  # Move by exactly bar width to make them touch
+            scores_second = score_data_second.get(criterion, [])
+            if scores_second:
+                score_counts = Counter(scores_second)
+                total = len(scores_second)
+                proportions_second = []
+                for score in range(1, 6):
+                    proportion = score_counts.get(score, 0) / total
+                    proportions_second.append(proportion)
+                proportions_data_grouped.append(proportions_second)
+            else:
+                proportions_data_grouped.append([0, 0, 0, 0, 0])
+            labels_grouped.append(f"{criterion}")
+            use_hatching.append(True)
+            y_positions.append(current_y)
+            
+            # Move to next group
+            current_y += bar_width + group_spacing
         
-        if proportions_data:
-            # Create diverging stacked bar chart
-            x_pos = np.arange(len(labels))
-            width = 0.7
+        if proportions_data_grouped:
+            # Create grouped stacked bar chart
+            width = bar_width  # Use the same width as defined above
             
-            # For diverging chart, we need to position negative scores to the left of center
-            # and positive scores to the right of center (neutral at center)
-            for i, proportions in enumerate(proportions_data):
-                # Calculate positions for diverging layout
-                # Left side: poor (1) and fair (2) - go leftward from center
-                # Center: neutral (3)  
-                # Right side: good (4) and excellent (5) - go rightward from center
+            for i, proportions in enumerate(proportions_data_grouped):
+                if any(p > 0 for p in proportions):  # Only plot if there's data
+                    # Left side (<=3) - poor, fair, and neutral
+                    left_total = proportions[0] + proportions[1] + proportions[2]
+                    left_start = -left_total
+                    
+                    # Choose pattern based on round
+                    hatch_pattern = '///' if use_hatching[i] else None
+                    
+                    # Plot poor, fair, neutral on left side with thicker interior lines
+                    if proportions[0] > 0:
+                        plt.barh(y_positions[i], proportions[0], height=width, 
+                               left=left_start, color=score_colors[1], alpha=0.3,
+                               edgecolor='black', linewidth=1.0, hatch=hatch_pattern)
+                    if proportions[1] > 0:
+                        plt.barh(y_positions[i], proportions[1], height=width,
+                               left=left_start + proportions[0], color=score_colors[2], alpha=0.3,
+                               edgecolor='black', linewidth=1.0, hatch=hatch_pattern)
+                    if proportions[2] > 0:
+                        plt.barh(y_positions[i], proportions[2], height=width,
+                               left=left_start + proportions[0] + proportions[1], color=score_colors[3], alpha=0.3,
+                               edgecolor='black', linewidth=1.0, hatch=hatch_pattern)
+                    
+                    # Right side (>3) - good and excellent with thicker interior lines
+                    right_start = 0
+                    if proportions[3] > 0:
+                        plt.barh(y_positions[i], proportions[3], height=width,
+                               left=right_start, color=score_colors[4], alpha=0.3,
+                               edgecolor='black', linewidth=1.0, hatch=hatch_pattern)
+                    if proportions[4] > 0:
+                        plt.barh(y_positions[i], proportions[4], height=width,
+                               left=right_start + proportions[3], color=score_colors[5], alpha=0.3,
+                               edgecolor='black', linewidth=1.0, hatch=hatch_pattern)
+                    
+                    # Draw thicker outline around the entire bar
+                    total_left = left_total
+                    total_right = proportions[3] + proportions[4]
+                    
+                    # Outer box with much thicker lines (3x thicker)
+                    from matplotlib.patches import Rectangle
+                    full_width = total_left + total_right
+                    rect = Rectangle((-total_left, y_positions[i] - width/2), 
+                                   full_width, width, 
+                                   fill=False, edgecolor='black', linewidth=1.0)
+                    plt.gca().add_patch(rect)
+            
+            # No title - removed as requested
+            
+            # Create single label per criterion group, positioned in the middle
+            group_labels = []
+            group_positions = []
+            
+            # Map criteria to more descriptive labels
+            criteria_labels = {
+                'Evidence': 'Evidence Grounding Quality',
+                'Single Cell Analysis': 'Single Cell Analysis Quality',
+                'Novelty': 'Novelty',
+                'Errors': 'No Factual Errors'
+            }
+            
+            # Get unique criteria and calculate middle positions
+            for i, criterion in enumerate(criteria_with_data):
+                # Find the middle position between R1 and R2 bars for this criterion
+                r1_pos = y_positions[i*2]      # First bar position for this criterion
+                r2_pos = y_positions[i*2 + 1]  # Second bar position for this criterion
+                middle_pos = (r1_pos + r2_pos) / 2
                 
-                # Left side (<=3) - poor, fair, and neutral - all warm colors
-                left_total = proportions[0] + proportions[1] + proportions[2]
-                left_start = -left_total  # Start position for all <=3 scores
-                
-                # Plot poor (leftmost)
-                if proportions[0] > 0:
-                    plt.barh(x_pos[i], proportions[0], height=width, 
-                           left=left_start, color=score_colors[1], 
-                           edgecolor='white', linewidth=0.8)
-                    # Add percentage label with scientific formatting
-                    if proportions[0] >= 0.03:  # Only show label if segment is large enough
-                        plt.text(left_start + proportions[0]/2, x_pos[i], 
-                               f'{proportions[0]:.0%}', ha='center', va='center',
-                               fontsize=7, fontweight='normal', color='white')
-                
-                # Plot fair
-                if proportions[1] > 0:
-                    plt.barh(x_pos[i], proportions[1], height=width,
-                           left=left_start + proportions[0], color=score_colors[2],
-                           edgecolor='white', linewidth=0.8)
-                    # Add percentage label
-                    if proportions[1] >= 0.03:
-                        plt.text(left_start + proportions[0] + proportions[1]/2, x_pos[i],
-                               f'{proportions[1]:.0%}', ha='center', va='center',
-                               fontsize=7, fontweight='normal', color='white')
-                
-                # Plot neutral (still on left side, <=3)
-                if proportions[2] > 0:
-                    plt.barh(x_pos[i], proportions[2], height=width,
-                           left=left_start + proportions[0] + proportions[1], color=score_colors[3],
-                           edgecolor='white', linewidth=0.8)
-                    # Add percentage label
-                    if proportions[2] >= 0.03:
-                        plt.text(left_start + proportions[0] + proportions[1] + proportions[2]/2, x_pos[i], 
-                               f'{proportions[2]:.0%}', ha='center', va='center', fontsize=7, 
-                               fontweight='normal', color='black')
-                
-                # Right side (>3) - good and excellent - cool colors
-                right_start = 0  # Start at center line (value 3)
-                
-                # Plot good
-                if proportions[3] > 0:
-                    plt.barh(x_pos[i], proportions[3], height=width,
-                           left=right_start, color=score_colors[4],
-                           edgecolor='white', linewidth=0.8)
-                    # Add percentage label  
-                    if proportions[3] >= 0.03:
-                        plt.text(right_start + proportions[3]/2, x_pos[i],
-                               f'{proportions[3]:.0%}', ha='center', va='center',
-                               fontsize=7, fontweight='normal', color='black')
-                
-                # Plot excellent (rightmost)
-                if proportions[4] > 0:
-                    plt.barh(x_pos[i], proportions[4], height=width,
-                           left=right_start + proportions[3], color=score_colors[5],
-                           edgecolor='white', linewidth=0.8)
-                    # Add percentage label
-                    if proportions[4] >= 0.03:
-                        plt.text(right_start + proportions[3] + proportions[4]/2, x_pos[i],
-                               f'{proportions[4]:.0%}', ha='center', va='center',
-                               fontsize=7, fontweight='normal', color='black')
+                # Use descriptive label if available, otherwise use original
+                descriptive_label = criteria_labels.get(criterion, criterion)
+                group_labels.append(descriptive_label)
+                group_positions.append(middle_pos)
             
-            # Scientific title formatting
-            plt.title('Quality Assessment Distribution', 
-                     fontsize=10, fontweight='normal', pad=15, color='black')
+            plt.yticks(group_positions, group_labels, fontsize=8, color='black')
+            plt.axvline(x=0, color='black', linewidth=2, alpha=0.3)
             
-            # Set y-axis labels (criteria names) with scientific formatting
-            plt.yticks(x_pos, labels, fontsize=8, color='black')
+            max_range = 0.9
+            padding = 0.05  # Add padding to prevent cutoff
+            plt.xlim(-0.7 * max_range - padding, max_range + padding)
             
-            # Set x-axis (horizontal axis for proportions)
-            ax = plt.gca()
+            # Set y-axis limits to accommodate all groups with padding
+            y_padding = 0.3  # Extra padding for y-axis
+            plt.ylim(-y_padding, max(y_positions) + bar_width + y_padding)
             
-            # Add vertical line at center (value 3 - the dividing line)
-            plt.axvline(x=0, color='black', linewidth=2, alpha=0.8)
-            
-            
-            # Set axis limits to show full range with space for percentage labels
-            max_range = 0.7  # Increased to accommodate percentage labels
-            plt.xlim(-max_range, max_range)
-            
-            # Remove y-axis grid, keep it clean like the image
             plt.grid(False)
             
-            # Style axes for scientific publication
+            ax = plt.gca()
             ax.set_facecolor('white')
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
@@ -267,30 +303,63 @@ def calculate_distributions():
             ax.spines['bottom'].set_color('black')
             ax.spines['bottom'].set_linewidth(0.5)
             
-            # Remove x-axis ticks and labels for cleaner look
-            plt.xticks([])
+            # Add 50% markers on x-axis
+            plt.xticks([-0.5, 0, 0.5], ['50%', '0%', '50%'], fontsize=8, color='black')
             plt.xlabel('')
             plt.ylabel('')
             
-            # Scientific legend formatting
-            legend_elements = [
-                plt.Rectangle((0,0),1,1, facecolor=score_colors[1], label='Poor (≤3)', edgecolor='black', linewidth=0.5),
-                plt.Rectangle((0,0),1,1, facecolor=score_colors[2], label='Fair (≤3)', edgecolor='black', linewidth=0.5),  
-                plt.Rectangle((0,0),1,1, facecolor=score_colors[3], label='Neutral (≤3)', edgecolor='black', linewidth=0.5),
-                plt.Rectangle((0,0),1,1, facecolor=score_colors[4], label='Good (>3)', edgecolor='black', linewidth=0.5),
-                plt.Rectangle((0,0),1,1, facecolor=score_colors[5], label='Excellent (>3)', edgecolor='black', linewidth=0.5)
-            ]
-            plt.legend(handles=legend_elements, loc='upper center', 
-                      bbox_to_anchor=(0.5, -0.08), ncol=5, frameon=True,
-                      fontsize=7, fancybox=False, shadow=False, 
-                      edgecolor='black', facecolor='white', framealpha=1)
+            # Create two separate legend groups without boxes
             
-            plt.tight_layout()
+            # First legend group for score categories (colors)
+            color_legend_elements = [
+                plt.Rectangle((0,0),1,1, facecolor=score_colors[1], label='Poor', edgecolor='gainsboro', linewidth=0.5),
+                plt.Rectangle((0,0),1,1, facecolor=score_colors[2], label='Fair', edgecolor='gainsboro', linewidth=0.5), 
+                plt.Rectangle((0,0),1,1, facecolor=score_colors[3], label='Neutral', edgecolor='gainsboro', linewidth=0.5),
+                plt.Rectangle((0,0),1,1, facecolor=score_colors[4], label='Good', edgecolor='gainsboro', linewidth=0.5),
+                plt.Rectangle((0,0),1,1, facecolor=score_colors[5], label='Excellent', edgecolor='gainsboro', linewidth=0.5)
+            ]
+            
+            # Second legend group for method indicators (line types)
+            method_legend_elements = [
+                plt.Rectangle((0,0),1,1, facecolor='white', label='AgentSee', edgecolor='black', linewidth=0.5),
+                plt.Rectangle((0,0),1,1, facecolor='white', hatch='///', label='Human Review + AgentSee', edgecolor='black', linewidth=0.5)
+            ]
+            
+            # Create first legend for colors (no box) - positioned at top center
+            first_legend = plt.legend(handles=color_legend_elements, loc='upper center', 
+                                    bbox_to_anchor=(0.5, 1.17), ncol=5, frameon=False,
+                                    fontsize=7)
+            
+            # Add the first legend back to the plot
+            plt.gca().add_artist(first_legend)
+            
+            # Create second legend for methods (no box) - positioned at top center
+            plt.legend(handles=method_legend_elements, loc='upper center', 
+                      bbox_to_anchor=(0.5, 1.12), ncol=2, frameon=False,
+                      fontsize=7)
+            
+            # Add a smaller black-edged box around both legends
+            from matplotlib.patches import Rectangle
+            ax = plt.gca()
+            
+            # Calculate box dimensions to fit snugly around the legends
+            legend_box = Rectangle((-0.1, 1.02), 1.2, 0.13, 
+                                 transform=ax.transAxes, 
+                                 fill=False, edgecolor='lightgray', linewidth=0.5, 
+                                 clip_on=False)
+            ax.add_patch(legend_box)
+            
+            plt.tight_layout(pad=2.0)  # Add padding around the entire plot
             
             # Save with Nature journal specifications
             stacked_plot_filename = os.path.join(plots_dir, "performance_stacked_distribution.png")
             plt.savefig(stacked_plot_filename, dpi=600, bbox_inches='tight', 
                        facecolor='white', edgecolor='none', format='png')
+            
+            # Save as PDF for publication
+            stacked_plot_filename_pdf = os.path.join(plots_dir, "performance_stacked_distribution.pdf")
+            plt.savefig(stacked_plot_filename_pdf, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none', format='pdf')
             
             # Also save as vector format for publication
             stacked_plot_filename_eps = os.path.join(plots_dir, "performance_stacked_distribution.eps")
@@ -298,6 +367,8 @@ def calculate_distributions():
                        facecolor='white', edgecolor='none', format='eps')
             plt.show()
             print(f"\nStacked bar plot saved as: {stacked_plot_filename}")
+            print(f"PDF version saved as: {stacked_plot_filename_pdf}")
+            print(f"EPS version saved as: {stacked_plot_filename_eps}")
 
 if __name__ == "__main__":
     calculate_distributions()
