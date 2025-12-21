@@ -145,6 +145,10 @@ class JUMPVisualizerHandler(SimpleHTTPRequestHandler):
             self.send_json_response(attempts)
             
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"ERROR in handle_attempts_api: {str(e)}")
+            print(f"Traceback: {error_details}")
             self.send_error_response(f"Error loading attempts: {str(e)}")
     
     def handle_attempt_details_api(self, attempt_id):

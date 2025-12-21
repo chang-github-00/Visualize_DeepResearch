@@ -1,0 +1,11 @@
+{
+  "attemptId": "attempt_38_1",
+  "geneName": "ZBTB20",
+  "timestamp": "2025-12-19T10:05:57.081Z",
+  "explore": "yes",
+  "evidence": "excellent",
+  "errors": "minor",
+  "singlecell": "excellent",
+  "novelty": "highly-novel",
+  "comments": "Miss some cells when doing segmentation"
+}
